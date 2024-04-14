@@ -29,9 +29,9 @@ def V(x):
 
 #%% Mirror function
 phi = mcbo.functional.LogBarrier()
-# phi = mm.NonsmoothBarrier()        
-# phi = mm.ElasticNet(lamda = 10.)   
-# phi = mm.L2() 
+# phi = mcbo.NonsmoothBarrier()        
+# phi = mcbo.ElasticNet(lamda = 10.)   
+# phi = mcbo.L2() 
         
 #%% Initialize x#
 num_points = 200
@@ -74,5 +74,5 @@ for i in range(T):
     plt.xlim(-1,1)
     plt.ylim(-0.5,1)    
     plt.title('t = {:.2f}'.format(tau*i))
-    plt.pause(0.01)
+    plt.pause(0.1)
     

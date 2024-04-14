@@ -11,6 +11,7 @@ sys.path.insert(0, current_dir[:current_dir.rfind(path.sep)])
 
 import mirrorcbo as mcbo
 import mirrorcbo.particledynamic as pdyn
+import initialization
 
 #%%
 cur_path = os.path.dirname(os.path.realpath(__file__))
@@ -19,7 +20,7 @@ cur_path = os.path.dirname(os.path.realpath(__file__))
 conf = mcbo.utils.config()
 conf.save2disk = False
 conf.T = 1001
-conf.tau=0.01
+conf.tau=0.01 #timestep
 conf.x_max = 4
 conf.x_min = -4
 conf.random_seed = 42
@@ -28,7 +29,7 @@ conf.beta = 1
 conf.sigma = 1.0
 conf.heavy_correction = False
 conf.num_particles = 200
-conf.factor = 1.0
+conf.factor = 2.0
 conf.noise = mcbo.noise.normal_noise(tau=conf.tau)
 conf.eta = 0.5
 
@@ -87,24 +88,43 @@ time = 0.0
 if conf.save2disk:
     path = cur_path+"\\visualizations\\Rastrigin\\"
     os.makedirs(path, exist_ok=True) 
-    
-for i in range(conf.T):
-    # plot
-    if i%100 == 0:
-        scx.set_offsets(opt.x[:, 0:2])
-        # scm.set_offsets(opt.m_beta[:, 0:2])
-        quiver.set_offsets(np.array([opt.x[:,0], opt.x[:,1]]).T)
-        quiver.set_UVC(opt.m_beta[:,0]-opt.x[:,0], opt.m_beta[:,1]-opt.x[:,1])
-        # plt.title('Time = ' + str(time) + ' beta: ' + str(opt.beta) + ' kappa: ' + str(opt.kernel.kappa))
-        plt.title('Time = ' + str(time))
-        plt.pause(0.1)
-        plt.show()
+
+threshold = 1e-2; rate = 0; N_simul = 10
+for n in range(N_simul):
+    opt = initialization.init(conf)
+    for i in range(conf.T):
+        # plot
+        if i%100 == 0:
+            scx.set_offsets(opt.x[:, 0:2])
+            # scm.set_offsets(opt.m_beta[:, 0:2])
+            quiver.set_offsets(np.array([opt.x[:,0], opt.x[:,1]]).T)
+            quiver.set_UVC(opt.m_beta[:,0]-opt.x[:,0], opt.m_beta[:,1]-opt.x[:,1])
+            # plt.title('Time = ' + str(time) + ' beta: ' + str(opt.beta) + ' kappa: ' + str(opt.kernel.kappa))
+            if n == 0:
+                plt.title('Time = ' + str(time))
+                plt.pause(0.1)
+            # plt.show()
+            
+            if conf.save2disk is True and i in snapshots:
+                fig.savefig(path+"Rastrigin-i-" \
+                            + str(i) + ".pdf",bbox_inches="tight")
+                
         
-        if conf.save2disk is True and i in snapshots:
-            fig.savefig(path+"Rastrigin-i-" \
-                        + str(i) + ".pdf",bbox_inches="tight")
+        # update step
+        time = conf.tau*(i+1)
+        opt.step(time=time)
+        beta_sched.update()
+
+    #compute success rate
+    val = conf.V(opt.x)
+    # maxvalindex = val.argmax(axis = 0)
+    # maxval = max(val)
+    meanval = sum(val)/val.size
+    test1 = meanval < threshold
+    if test1 == 1:
+        rate = rate + 1
     
-    # update step
-    time = conf.tau*(i+1)
-    opt.step(time=time)
-    beta_sched.update()
+rate = rate/N_simul
+print("Success rate is ", rate)
+quit()
+# %%
