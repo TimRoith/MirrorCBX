@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 from matplotlib import rc
 import os
 
+from datetime import timedelta
+import time
+
 #%% custom imports
 from inspect import getsourcefile
 import os.path as path, sys
@@ -11,7 +14,7 @@ sys.path.insert(0, current_dir[:current_dir.rfind(path.sep)])
 
 import mirrorcbo as mcbo
 import mirrorcbo.particledynamic as pdyn
-import initialization
+import mcbo_initialization
 
 #%%
 cur_path = os.path.dirname(os.path.realpath(__file__))
@@ -35,14 +38,17 @@ conf.eta = 0.5
 
 
 conf.MirrorFct = mcbo.functional.ElasticNet(lamda=1)
-# conf.MirrorFct = mcbo.functional.ProjectionBall(radius=1, center=np.array([1,2]))
-# conf.MirrorFct = mcbo.functional.LogBarrier()
+# center_mirror = np.array([[2, 1]])
+# conf.MirrorFct = mcbo.functional.ProjectionBall(radius=1, center = center_mirror)
+# conf.MirrorFct = mcbo.functional.LogBarrier() # [log-barrier function fails the test for both ver 1, 2 / check this]
 
 
 snapshots = [0, 100, 500, 1000, 2000]
 
 
 conf.V = mcbo.objectives.Rastrigin()
+g_min = np.zeros([conf.d, 1])
+# define this in the objective function for each case
 
 #%% initialize scheme
 np.random.seed(seed=conf.random_seed)
@@ -50,8 +56,14 @@ x = mcbo.utils.init_particles(num_particles=conf.num_particles, d=conf.d,\
                       x_min=conf.x_min, x_max=conf.x_max)
     
 #%% init optimizer and scheduler
-opt = pdyn.MirrorCBO(x, conf.V, conf.noise, sigma=conf.sigma, tau=conf.tau,\
-                       beta = conf.beta, MirrorFct = conf.MirrorFct)
+version = 1
+# choose noise term ver 1 or ver 2
+if version == 1:
+    opt = pdyn.MirrorCBO(x, conf.V, conf.noise, sigma=conf.sigma, tau=conf.tau,\
+        beta = conf.beta, MirrorFct = conf.MirrorFct)
+else:
+    opt = pdyn.MirrorCBO2(x, conf.V, conf.noise, sigma=conf.sigma, tau=conf.tau,\
+        beta = conf.beta, MirrorFct = conf.MirrorFct)
 
 beta_sched = mcbo.scheduler.beta_exponential(opt, r=conf.factor, beta_max=1e7)
 
@@ -83,15 +95,18 @@ scx = ax[0,0].scatter(opt.x[:,0], opt.x[:,1], marker='o', color=colors[1], s=12)
 quiver = ax[0,0].quiver(opt.x[:,0], opt.x[:,1], opt.m_beta[:,0]-opt.x[:,0], opt.m_beta[:,1]-opt.x[:,1], color=colors[1], scale=20)
 #scm = ax[0,0].scatter(opt.m_beta[:,0], opt.m_beta[:,1], marker='x', color=colors[0], s=50)
 
-time = 0.0
-#%% main loop
+time_var = 0.0
+#%% main loop for mirror cbo (mcbo.py)
 if conf.save2disk:
-    path = cur_path+"\\visualizations\\Rastrigin\\"
+    path = cur_path+"\\visualizations\\Rastrigin\\mcbo"
     os.makedirs(path, exist_ok=True) 
 
 threshold = 1e-2; rate = 0; N_simul = 10
+testval = np.zeros([conf.T, 1])
+error = np.zeros([conf.T, 1])
+starttime = time.perf_counter()
 for n in range(N_simul):
-    opt = initialization.init(conf)
+    opt = mcbo_initialization.init(conf, version)
     for i in range(conf.T):
         # plot
         if i%100 == 0:
@@ -101,7 +116,7 @@ for n in range(N_simul):
             quiver.set_UVC(opt.m_beta[:,0]-opt.x[:,0], opt.m_beta[:,1]-opt.x[:,1])
             # plt.title('Time = ' + str(time) + ' beta: ' + str(opt.beta) + ' kappa: ' + str(opt.kernel.kappa))
             if n == 0:
-                plt.title('Time = ' + str(time))
+                plt.title('Time = ' + str(time_var))
                 plt.pause(0.1)
             # plt.show()
             
@@ -111,20 +126,43 @@ for n in range(N_simul):
                 
         
         # update step
-        time = conf.tau*(i+1)
-        opt.step(time=time)
+        time_var = conf.tau*(i+1)
+        opt.step(time=time_var)
         beta_sched.update()
+
+        if (n == N_simul -1):
+            testval[i] = sum(conf.V(opt.x))/val.size  
+            error[i] = np.mean(abs(testval[i] - conf.V(g_min)), axis = 0)
 
     #compute success rate
     val = conf.V(opt.x)
     # maxvalindex = val.argmax(axis = 0)
     # maxval = max(val)
     meanval = sum(val)/val.size
+    # test1 = abs( meanval - (conf.V( center_mirror) ))  < threshold
     test1 = meanval < threshold
+    
+    # Ultimately, compare the performance between ver 1 vs. ver 2 
+    # -- calculation speed / using time module, timedelta module (reference) 
+    # --> ver 1. is superior (of course, it doens't have to compute hessian)
+    # -- rate of convergence / plot [iteration - error] curve
+
     if test1 == 1:
         rate = rate + 1
     
 rate = rate/N_simul
+duration = timedelta(seconds=time.perf_counter()-starttime)
+
 print("Success rate is ", rate)
-quit()
+print('Job took: ', duration)
+
+plt.figure()
+plt.plot(range(conf.T), error, label='error')
+plt.xlabel('Iteration')
+plt.ylabel('Error')
+plt.title('Error vs. Iteration')
+plt.legend()
+plt.show()
+
+# quit()
 # %%

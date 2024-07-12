@@ -74,5 +74,5 @@ for i in range(T):
     plt.xlim(-1,1)
     plt.ylim(-0.5,1)    
     plt.title('t = {:.2f}'.format(tau*i))
-    plt.pause(0.1)
+    plt.pause(0.01)
     
