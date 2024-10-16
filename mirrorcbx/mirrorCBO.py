@@ -1,5 +1,15 @@
 from cbx.dynamics.cbo import CBO, cbo_update
+from cbx.utils.history import track
 from .mirrormaps import get_mirror_map
+
+class track_y(track):
+    @staticmethod
+    def init_history(dyn):
+        dyn.history['y'] = []
+    
+    @staticmethod
+    def update(dyn) -> None:
+        dyn.history['y'].append(dyn.copy(dyn.y))
     
     
 class MirrorCBO(CBO):
@@ -19,3 +29,7 @@ class MirrorCBO(CBO):
             self.sigma, self.noise()
         )
         self.x = self.mirrormap.grad_conj(self.y)
+        
+    known_tracks = {
+        'y': track_y,
+        **CBO.known_tracks,}
