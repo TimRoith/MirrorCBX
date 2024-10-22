@@ -1,0 +1,27 @@
+name: 'driftconstrcboAckleyPlane'
+path: 'results/'
+dyn:
+    name: 'DriftConstrainedCBO'
+    dt: 0.1
+    lamda: 1
+    alpha: 50.
+    M: 100
+    N: 50
+    sigma: .5
+    noise: 'isotropic'
+    max_it: 400
+    verbosity: 0
+    f_dim: '3D'
+    track_args: {'names':['x', 'drift', 'consensus']}
+init:
+    name: 'normal'
+    mean: 0.
+    std: 1.
+scheduler:
+    name: 'multiply'
+    factor: 1.05
+    maximum: 1e12
+problem:
+    d: 3
+    obj: 'Ackley-A'
+    constr: 'Hyperplane-A'

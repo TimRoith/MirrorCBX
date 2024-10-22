@@ -186,19 +186,19 @@ class ElasticNet(MirrorMap):
     #     return I #+ J
     
     
- class Entropy(MirrorMap):
-    def __init__(self, scale=1):
-        self.scale = scale
+class Entropy(MirrorMap):
+   def __init__(self, scale=1):
+       self.scale = scale
 
-    def __call__(self, x):
-        return np.sum(x*np.log(1/x), axis = -1)
-    
-    def grad(self, x):
-        EPS = np.finfo(np.float32).eps
-        return np.log(1/(x + EPS)) - 1
-    
-    def grad_conj(self, y, theta):
-        return np.exp(-(y + 1))   
+   def __call__(self, x):
+       return np.sum(x*np.log(1/x), axis = -1)
+   
+   def grad(self, x):
+       EPS = np.finfo(np.float32).eps
+       return np.log(1/(x + EPS)) - 1
+   
+   def grad_conj(self, y, theta):
+       return np.exp(-(y + 1))   
     
     
 mirror_dict = {

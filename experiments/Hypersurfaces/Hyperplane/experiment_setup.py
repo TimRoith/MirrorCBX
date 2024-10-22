@@ -32,6 +32,12 @@ class Ackley_Experiment(ExperimentConfig):
             elif dname == 'ProxCBO':
                 pp = MirrorMaptoPostProcessProx(ProjectionHyperplane)(a=self.a,b= self.b)
                 self.dyn_kwargs['post_process'] = pp
+            elif dname == 'DriftConstrainedCBO':
+                self.dyn_kwargs['constraints'] = [{
+                    'name' : 'plane',
+                    'a': self.a,
+                    'b': self.b
+                }]
         else:
             raise ValueError('Unknown constraint: ' +str(self.constr))
     

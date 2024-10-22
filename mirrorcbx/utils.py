@@ -1,5 +1,5 @@
 from cbx.dynamics import CBO
-from mirrorcbx.dynamics import MirrorCBO, SphereCBO
+from mirrorcbx.dynamics import MirrorCBO, SphereCBO, DriftConstrainedCBO
 from mirrorcbx.regularization import regularization_paramter_scheduler
 from omegaconf import OmegaConf
 import numpy as np
@@ -61,7 +61,8 @@ def init_normal(mean=0, std=1., size=(1,1,1)):
 
 init_dict = {'normal': init_normal}
 dyn_dict = {'MirrorCBO':MirrorCBO, 'SphereCBO':SphereCBO, 
-            'ProxCBO': CBO, 'PenalizedCBO': CBO}
+            'ProxCBO': CBO, 'PenalizedCBO': CBO, 
+            'DriftConstrainedCBO': DriftConstrainedCBO}
 scheduler_dict = {'multiply': multiply}
 
 
