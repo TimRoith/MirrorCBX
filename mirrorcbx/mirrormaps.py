@@ -9,6 +9,21 @@ def raise_NIE(cls_name, f_name):
     
 
 
+def Bregman_distance(F, p, q):
+    return F(p) - F(q) - (F.grad(q) * (p - q)).sum(axis=-1)
+
+def MirrorMaptoPostProcessProx(MirrorMap):
+    def apply_prox(self, dyn):
+       dyn.x = self.grad_conj(dyn.x)
+        
+    return type(MirrorMap.__name__ + str('_Prox'), 
+         (MirrorMap,), 
+         dict(
+             __call__=apply_prox,
+             )
+         )
+
+
 class MirrorMap:
     '''
     Abstract class for mirror maps.
@@ -27,21 +42,44 @@ class MirrorMap:
         
     def hessian(self, theta):
         raise raise_NIE(str(self.__class__), 'hessian')
+        
+    def Bregman_distance(self, p, q):
+        return Bregman_distance(self, p, q)
+    
+    
+class ProjectionMirrorMap(MirrorMap):
+    def grad(self, theta):
+        return theta
 
 
 
-class ProjectionBall(MirrorMap):
+class ProjectionBall(ProjectionMirrorMap):
     def __init__(self, radius=1., center=0.):
         super().__init__()
         self.radius = radius    
         self.center = center
+        self.thresh = 1e-5
         
-    def grad(self, theta):                   
-        return theta
+    def __call__(self, theta):
+        nx = np.linalg.norm(theta, axis=-1)
+        idx = np.where(nx > (self.radius + self.thresh))
+        nx = 0.5*nx**2 
+        nx[idx] = np.inf
+        return nx
     
     def grad_conj(self, y):
         n_y = np.linalg.norm(y - self.center, axis=-1, ord=2, keepdims=True)
         return self.center + (y - self.center) / np.maximum(1, n_y/self.radius)
+    
+class ProjectionHyperplane(ProjectionMirrorMap):
+    def __init__(self, a=1, b=0):
+        super().__init__()
+        self.a = a
+        self.norm_a = np.linalg.norm(a, axis=-1)**2
+        self.b = b
+        
+    def grad_conj(self, y):
+        return y - ((self.a * y).sum(axis=-1, keepdims=True) - self.b)/self.norm_a * self.a
 
 
 class LogBarrierBox(MirrorMap):
@@ -155,9 +193,10 @@ mirror_dict = {
     'ElasticNet': ElasticNet,
     'None': L2, 'L2': L2,
     'ProjectionBall': ProjectionBall,
+    'ProjectionHyperplane': ProjectionHyperplane,
     'LogBarrierBox': LogBarrierBox,
     'NonsmoothBarrier': NonsmoothBarrier,
-    'weighted_L2': weighted_L2
+    'weighted_L2': weighted_L2,
     }   
 
 
@@ -165,8 +204,8 @@ def get_mirror_map_by_name(name, **kwargs):
     if name in mirror_dict.keys():
         return mirror_dict[name](**kwargs)
     else:
-        raise ValueError('Unknown mirror map ' + str(name) + 
-                         'please choose from ' + str(mirror_dict.keys()))
+        raise ValueError('Unknown mirror map ' + str(name) + '. ' + 
+                         ' Please choose from ' + str(mirror_dict.keys()))
         
 def get_mirror_map(mm):
     if isinstance(mm, dict):
@@ -175,7 +214,7 @@ def get_mirror_map(mm):
             **{k:v for (k,v) in mm.items() if not k=='name'}
             )
     elif isinstance(mm, str) or mm is None:
-        return get_mirror_map_by_name(mm)
+        return get_mirror_map_by_name(str(mm))
     else:
         warnings.warn('MirrorMap did not fit the signature dict or str.' + 
                       'Intepreting the input as a valid mirror map.')

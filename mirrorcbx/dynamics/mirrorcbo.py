@@ -1,6 +1,6 @@
 from cbx.dynamics.cbo import CBO, cbo_update
 from cbx.utils.history import track
-from .mirrormaps import get_mirror_map
+from mirrorcbx.mirrormaps import get_mirror_map
 
 class track_y(track):
     @staticmethod
