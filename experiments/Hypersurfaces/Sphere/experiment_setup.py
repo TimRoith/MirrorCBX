@@ -1,5 +1,5 @@
 from mirrorcbx.utils import ExperimentConfig
-from mirrorcbx.mirrormaps import ProjectionHyperplane, MirrorMaptoPostProcessProx
+from mirrorcbx.mirrormaps import ProjectionSphere, MirrorMaptoPostProcessProx
 from mirrorcbx.regularization import regularize_objective
 from cbx.objectives import Ackley
 import numpy as np
@@ -25,7 +25,7 @@ class Ackley_Experiment(ExperimentConfig):
                     'name' : 'sphere',
                 }
             elif dname == 'ProxCBO':
-                pp = MirrorMaptoPostProcessProx(ProjectionHyperplane)(a=self.a,b= self.b)
+                pp = MirrorMaptoPostProcessProx(ProjectionSphere)()
                 self.dyn_kwargs['post_process'] = pp
             elif dname == 'DriftConstrainedCBO':
                 self.dyn_kwargs['constraints'] = [{
