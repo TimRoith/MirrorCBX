@@ -2,10 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mirrorcbx.utils import save_conf_to_table
 import cbx.utils.success as scc
-import scienceplots
-plt.style.use(['science'])
-plt.rcParams['text.usetex'] = False
-np.random.seed(154023)
 #%%
 exp = 'Sphere'
 if exp == 'Plane':
@@ -14,7 +10,7 @@ if exp == 'Plane':
     save_conf_to_table(conf.config)
 elif exp == 'Sphere':
     from Sphere.experiment_setup import Ackley_Experiment
-    conf = Ackley_Experiment('Sphere/params/sphere_params.yaml')
+    conf = Ackley_Experiment('Sphere/params/mirror_params.yaml')
     save_conf_to_table(conf.config)
 #%%
 f = conf.get_objective()
