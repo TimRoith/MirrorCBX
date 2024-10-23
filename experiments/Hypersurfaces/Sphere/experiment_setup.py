@@ -13,8 +13,6 @@ class Ackley_Experiment(ExperimentConfig):
     def set_constr(self,):
         self.constr = self.config.problem.constr
         if self.constr == 'Sphere':
-            self.a = np.ones(self.d)
-            self.b = 1
             dname = self.config.dyn.name
             if dname == 'MirrorCBO':
                 self.dyn_kwargs['mirrormap'] = {
@@ -49,7 +47,7 @@ class Ackley_Experiment(ExperimentConfig):
             
             f = regularize_objective(
                 f, 
-                {'name':'Plane', 'a': self.a, 'b': self.b},
+                {'name':'Sphere',},
                 lamda=lamda)
         return f
     

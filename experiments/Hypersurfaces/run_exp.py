@@ -10,7 +10,7 @@ if exp == 'Plane':
     save_conf_to_table(conf.config)
 elif exp == 'Sphere':
     from Sphere.experiment_setup import Ackley_Experiment
-    conf = Ackley_Experiment('Sphere/params/prox_params.yaml')
+    conf = Ackley_Experiment('Sphere/params/penalized_params.yaml')
     save_conf_to_table(conf.config)
 #%%
 f = conf.get_objective()

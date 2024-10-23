@@ -16,9 +16,17 @@ class HyperplaneDistance:
         return np.abs((self.a*x).sum(axis=-1) - self.b)/self.norm_a
 
 
+class SphereDistance:
+    def __init__(self, r=1.):
+        self.r = r
+    
+    def __call__(self, x):
+        return np.abs(np.linalg.norm(x, axis=-1) - self.r)
+
 reg_func_dict = {
     'L1': L1,
-    'Plane': HyperplaneDistance}
+    'Plane': HyperplaneDistance,
+    'Sphere': SphereDistance}
 
 def select_reg_func(func):
     if isinstance(func, dict):
