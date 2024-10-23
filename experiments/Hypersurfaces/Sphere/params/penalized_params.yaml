@@ -5,8 +5,8 @@ dyn:
     dt: 0.05
     lamda: 1
     alpha: 5.
-    M: 100
-    N: 50
+    M: 10
+    N: 100
     sigma: .5
     noise: 'isotropic'
     max_it: 400
