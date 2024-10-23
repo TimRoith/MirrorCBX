@@ -12,21 +12,17 @@ class Ackley_Experiment(ExperimentConfig):
         
     def set_constr(self,):
         self.constr = self.config.problem.constr
-        if self.constr == 'Hyperplane-A':
+        if self.constr == 'Sphere':
             self.a = np.ones(self.d)
             self.b = 1
             dname = self.config.dyn.name
             if dname == 'MirrorCBO':
                 self.dyn_kwargs['mirrormap'] = {
-                    'name':'ProjectionHyperplane', 
-                    'a': self.a,
-                    'b': self.b
+                    'name':'ProjectionSphere',
                     }
             elif dname == 'SphereCBO':
                 self.dyn_kwargs['sdf'] = {
-                    'name' : 'plane',
-                    'a': self.a,
-                    'b': self.b
+                    'name' : 'sphere',
                 }
             elif dname == 'ProxCBO':
                 pp = MirrorMaptoPostProcessProx(ProjectionHyperplane)(a=self.a,b= self.b)
@@ -41,9 +37,9 @@ class Ackley_Experiment(ExperimentConfig):
             raise ValueError('Unknown constraint: ' +str(self.constr))
     
     def get_objective(self,):        
-        if self.obj == 'Ackley-A':
+        if self.obj == 'Ackley-B':
             v = 0.4 * np.ones((1,1, self.d))
-            f = Ackley(minimum=v, c=np.pi*4, b=0.1)
+            f = Ackley(minimum=v, c=np.pi*2, b=0.1)
         else:
             raise ValueError('Unknown objective ' + str(self.obj))
             
@@ -58,7 +54,7 @@ class Ackley_Experiment(ExperimentConfig):
         return f
     
     def get_minimizer(self,):
-        if self.obj == 'Ackley-A' and self.constr == 'Hyperplane-A':
-            if self.d == 3:
-                return  1/(self.d) * np.ones((self.d,))
+        if self.obj == 'Ackley-B' and self.constr == 'Sphere':
+            if self.d == 3 or self.d == 20:
+                return  1/(self.d**0.5) * np.ones((self.d,))
         raise ValueError('The minimizer is not known for the current config')

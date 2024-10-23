@@ -71,6 +71,7 @@ class ProjectionBall(ProjectionMirrorMap):
         n_y = np.linalg.norm(y - self.center, axis=-1, ord=2, keepdims=True)
         return self.center + (y - self.center) / np.maximum(1, n_y/self.radius)
     
+
 class ProjectionHyperplane(ProjectionMirrorMap):
     def __init__(self, a=1, b=0):
         super().__init__()
@@ -80,6 +81,14 @@ class ProjectionHyperplane(ProjectionMirrorMap):
         
     def grad_conj(self, y):
         return y - ((self.a * y).sum(axis=-1, keepdims=True) - self.b)/self.norm_a * self.a
+    
+class ProjectionSphere(ProjectionMirrorMap):
+    def __init__(self, r=1.):
+        super().__init__()
+        self.r = r
+        
+    def grad_conj(self, y):
+        return self.r * y/np.linalg.norm(y,axis=-1,keepdims=True)
 
 
 class LogBarrierBox(MirrorMap):
@@ -206,6 +215,7 @@ mirror_dict = {
     'None': L2, 'L2': L2,
     'ProjectionBall': ProjectionBall,
     'ProjectionHyperplane': ProjectionHyperplane,
+    'ProjectionSphere': ProjectionSphere,
     'LogBarrierBox': LogBarrierBox,
     'NonsmoothBarrier': NonsmoothBarrier,
     'weighted_L2': weighted_L2, 

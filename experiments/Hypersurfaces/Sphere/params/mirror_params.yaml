@@ -1,20 +1,20 @@
 name: 'mirrorcboAckleyPlane'
-path: 'Hyperplane/results/'
+path: 'Sphere/results/'
 dyn:
     name: 'MirrorCBO'
     dt: 0.1
     lamda: 1
-    alpha: 500.
+    alpha: 50.
     M: 100
     N: 50
-    sigma: 1.
-    noise: 'isotropic'
+    sigma: 3.
+    noise: 'anisotropic'
     max_it: 400
     verbosity: 0
     f_dim: '3D'
     track_args: {'names':['x', 'drift', 'y', 'consensus']}
 init:
-    name: 'normal'
+    name: 'sphere'
     mean: 0.
     std: 1.
 scheduler:
@@ -22,6 +22,6 @@ scheduler:
     factor: 1.05
     maximum: 1e12
 problem:
-    d: 3
-    obj: 'Ackley-A'
-    constr: 'Hyperplane-A'
+    d: 20
+    obj: 'Ackley-B'
+    constr: 'Sphere'

@@ -59,7 +59,11 @@ def save_conf_to_table(conf):
 def init_normal(mean=0, std=1., size=(1,1,1)):
     return np.random.normal(mean, std, size)
 
-init_dict = {'normal': init_normal}
+def init_sphere(mean=0, std=1., size=(1,1,1)):
+    z = np.random.normal(mean, std, size)
+    return z/np.linalg.norm(z,axis=-1, keepdims=True)
+
+init_dict = {'normal': init_normal, 'sphere':init_sphere}
 dyn_dict = {'MirrorCBO':MirrorCBO, 'SphereCBO':SphereCBO, 
             'ProxCBO': CBO, 'PenalizedCBO': CBO, 
             'DriftConstrainedCBO': DriftConstrainedCBO}

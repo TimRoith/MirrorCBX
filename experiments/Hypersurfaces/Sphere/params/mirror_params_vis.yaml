@@ -1,26 +1,21 @@
-name: 'proxcboAckleyPlane'
-path: 'Hyperplane/results/'
+name: 'mirrorcboAckleyPlaneVis'
 dyn:
-    name: 'ProxCBO'
-    dt: 0.1
+    name: 'MirrorCBO'
+    dt: 0.05
     lamda: 1
     alpha: 500.
     M: 100
     N: 50
-    sigma: 1.
+    sigma: .25
     noise: 'isotropic'
     max_it: 400
     verbosity: 0
     f_dim: '3D'
-    track_args: {'names':['x', 'drift', 'consensus']}
+    track_args: {'names':['x', 'drift', 'y', 'consensus']}
 init:
     name: 'normal'
     mean: 0.
     std: 1.
-scheduler:
-    name: 'multiply'
-    factor: 1.05
-    maximum: 1e12
 problem:
     d: 3
     obj: 'Ackley-A'
