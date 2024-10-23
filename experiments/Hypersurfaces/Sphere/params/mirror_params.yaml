@@ -4,10 +4,10 @@ dyn:
     name: 'MirrorCBO'
     dt: 0.1
     lamda: 1
-    alpha: 50.
+    alpha: 5.
     M: 100
-    N: 50
-    sigma: 3.
+    N: 100
+    sigma: 1.
     noise: 'anisotropic'
     max_it: 400
     verbosity: 0

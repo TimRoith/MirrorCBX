@@ -4,11 +4,11 @@ dyn:
     name: 'SphereCBO'
     dt: 0.1
     lamda: 1
-    alpha: 50.
+    alpha: 5.
     M: 100
-    N: 50
-    sigma: 1.
-    noise: 'anisotropic'
+    N: 100
+    sigma: .3
+    noise: 'isotropic'
     max_it: 400
     verbosity: 0
     f_dim: '3D'

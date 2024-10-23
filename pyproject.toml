@@ -13,6 +13,7 @@ dependencies = [
     'numpy', 
     'scipy', 
     'matplotlib',
+    'OmegaConf',
     'cbx'
     ]
 readme = "README.md"

@@ -29,7 +29,7 @@ x = np.array(dyn.history['x'])[1:, ...]
 diff = np.linalg.norm(x - const_minimizer, axis=-1).mean(axis=(-2,-1))
 np.savetxt(fname + '_diff.txt', diff)
 
-tol = 0.05
+tol = 0.1
 scc_eval = scc.dist_to_min_success(dyn.consensus, const_minimizer, tol=tol)
 np.savetxt(fname + '_scc.txt', np.array([scc_eval['rate'], tol]))
 print('Success rate: ' + str(scc_eval['rate'] ))
