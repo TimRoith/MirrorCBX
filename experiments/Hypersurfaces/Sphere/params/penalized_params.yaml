@@ -1,5 +1,5 @@
-name: 'penalizedcboAckleyPlane'
-path: 'Hyperplane/results/'
+name: 'penalizedcboAckleySphere'
+path: 'Sphere/results/'
 dyn:
     name: 'PenalizedCBO'
     dt: 0.05
@@ -23,7 +23,7 @@ scheduler:
     maximum: 1e12
 problem:
     d: 3
-    obj: 'Ackley-A'
-    constr: 'Hyperplane-A'
+    obj: 'Ackley-B'
+    constr: 'Sphere'
 reg:
     lamda: 0.1
