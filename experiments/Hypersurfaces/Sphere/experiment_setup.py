@@ -27,9 +27,7 @@ class Ackley_Experiment(ExperimentConfig):
                 self.dyn_kwargs['post_process'] = pp
             elif dname == 'DriftConstrainedCBO':
                 self.dyn_kwargs['constraints'] = [{
-                    'name' : 'plane',
-                    'a': self.a,
-                    'b': self.b
+                    'name' : 'sphere',
                 }]
         else:
             raise ValueError('Unknown constraint: ' +str(self.constr))

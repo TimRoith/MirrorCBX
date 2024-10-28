@@ -41,6 +41,20 @@ class NoConstraint(Constraint):
     def hessian(self, x):
         return np.zeros(x.shape + (x.shape[-1],))
     
+class sphereConstraint(Constraint):
+    def __init__(self, r=1.):
+        super().__init__()
+        self.r = r
+        
+    def __call__(self, x):
+        return np.linalg.norm(x, axis=-1)**2 - self.r
+    
+    def grad(self, x):
+        return 2 * x
+    
+    def hessian(self, x):
+        return 2 * np.tile(np.eye(x.shape[-1]), x.shape[:-1] + (1,1))
+    
 
 class planeConstraint(Constraint):
     def __init__(self, a=0, b=1.):
@@ -59,7 +73,7 @@ class planeConstraint(Constraint):
         return np.zeros(x.shape + (x.shape[-1],))
     
     
-const_dict = {'plane': planeConstraint}    
+const_dict = {'plane': planeConstraint, 'sphere': sphereConstraint}    
 
 def get_constraints(const):
     CS = []
