@@ -32,8 +32,13 @@ class Ackley_Experiment(ExperimentConfig):
         else:
             raise ValueError('Unknown constraint: ' +str(self.constr))
     
-    def get_objective(self,):        
-        if self.obj == 'Ackley-B':
+    def get_objective(self,):
+        if self.obj == 'Ackley-C':
+            v = np.zeros((1,1,self.d))#
+            v[0,0,-1] = 1
+            f = Ackley(minimum=v, c=3 * 2 * np.pi, b=0.2*3)
+            const_minimizer = v
+        elif self.obj == 'Ackley-B':
             v = 0.4 * np.ones((1,1, self.d))
             f = Ackley(minimum=v, c=np.pi*2, b=0.1)
         else:
@@ -53,4 +58,8 @@ class Ackley_Experiment(ExperimentConfig):
         if self.obj == 'Ackley-B' and self.constr == 'Sphere':
             if self.d == 3 or self.d == 20:
                 return  1/(self.d**0.5) * np.ones((self.d,))
+        elif self.obj == 'Ackley-C':
+            v = np.zeros((1,1,self.d))#
+            v[0,0,-1] = 1
+            return v
         raise ValueError('The minimizer is not known for the current config')
