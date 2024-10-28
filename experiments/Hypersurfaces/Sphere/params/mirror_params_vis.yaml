@@ -1,22 +1,27 @@
-name: 'mirrorcboAckleyPlaneVis'
+name: 'mirrorcboAckleySphereVis'
+path: 'results/'
 dyn:
     name: 'MirrorCBO'
-    dt: 0.05
+    dt: 0.01
     lamda: 1
-    alpha: 500.
-    M: 100
-    N: 50
-    sigma: .25
+    alpha: 5.
+    M: 1
+    N: 100
+    sigma: .2
     noise: 'isotropic'
     max_it: 400
     verbosity: 0
     f_dim: '3D'
     track_args: {'names':['x', 'drift', 'y', 'consensus']}
 init:
-    name: 'normal'
+    name: 'sphere-half'
     mean: 0.
     std: 1.
+scheduler:
+    name: 'multiply'
+    factor: 1.05
+    maximum: 1e12
 problem:
     d: 3
-    obj: 'Ackley-A'
-    constr: 'Hyperplane-A'
+    obj: 'Ackley-C'
+    constr: 'Sphere'

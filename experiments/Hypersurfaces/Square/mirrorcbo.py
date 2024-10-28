@@ -7,20 +7,58 @@ np.random.seed(1524023)
 import numpy as np
 import matplotlib.pyplot as plt
 from mirrorcbx.utils import save_conf_to_table
+from mirrorcbx.mirrormaps import ProjectionSquare
 import cbx.utils.success as scc
-#%%
-from experiment_setup import Ackley_Experiment
-conf = Ackley_Experiment('params/mirror_params_vis.yaml')
-save_conf_to_table(conf.config)
-#%%
-f = conf.get_objective()
-const_minimizer = conf.get_minimizer()
-x = conf.init_x()
+from mirrorcbx.dynamics import MirrorCBO
+from cbx.objectives import Rastrigin, Ackley, eggholder, Bukin6, Michalewicz, Holder_table
+from cbx.plotting import contour_2D
+from matplotlib.patches import Rectangle
+from cbx.scheduler import multiply
 
-dyn = conf.dyn_cls(f, x=x, **conf.dyn_kwargs)
-dyn.optimize(sched=conf.get_scheduler())
+#%%
+f = Holder_table(factor=2, shift = np.array([0.2,0.0]))# eggholder()#Ackley()
+const_minimizer = np.zeros((2))
+mm = ProjectionSquare()
+x = np.random.uniform(-3, 3, (1, 30, 2))
+#x = mm.grad_conj(x)
+
+
+dyn = MirrorCBO(f, x=x, max_it=600, 
+                mirrormap=mm,
+                alpha=10.,
+                track_args = {'names':['x','y', 'energy']},
+                sigma=0.05,
+                dt = 0.01
+                )
+dyn.optimize(sched=multiply(factor=1.05, maximum=1e12))
+
+#%%
+plt.close('all')
+x = np.array(dyn.history['x'])[1:, ...]
+y = np.array(dyn.history['y'])
+fig, ax = plt.subplots(1,2, )
+
+
+for k, z in enumerate([x,y]):
+    contour_2D(f, ax=ax[k], num_pts=40, cmap=plt.cm.terrain, 
+                            antialiased=False, levels=60, 
+                            x_max=2, x_min=-2, rasterized=True)
+    ax[k].add_patch(Rectangle((-1, -1), 2, 2, color='k', fill=False))
+    colors = iter(plt.cm.Reds(np.linspace(0.5,1.,10)))
+    for j in range(10):
+        c = next(colors)
+        ax[k].plot(*[z[:, 0, j, i] for i in [0,1]], color=c, linewidth=2., rasterized=False)
+        ax[k].scatter(*[z[-1, 0, j, i] for i in [0,1]], color='b', rasterized=False)
+        ax[k].scatter(*[z[0, 0, j, i] for i in [0,1]], color=c, rasterized=False)
+    
+    ax[k].axis('square')
+    ax[k].set_xlim([-1.5,1.5])
+    ax[k].set_ylim([-1.5,1.5])
+    
+plt.tight_layout(pad=0., w_pad=0., h_pad = 0.)
+plt.savefig('results/square_vis.pdf')
 #%% Evaluate experiment
-fname = conf.config.path+conf.config.name
+fname = 'results/saure'
 x = np.array(dyn.history['x'])[1:, ...]
 y = np.array(dyn.history['y'])
 diff = np.linalg.norm(x - const_minimizer, axis=-1).mean(axis=(-2,-1))
