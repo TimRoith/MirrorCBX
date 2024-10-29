@@ -1,10 +1,11 @@
 from experiment_setup import PhaseRetrieval_Experiment
 
-num_runs = 2
-success = 0
+
 conf = PhaseRetrieval_Experiment('params/mirror_params_phase.yaml')
 
 for M in [500, 1000]:
+    num_runs = 2
+    success = 0
     #%%
     for run in range(num_runs):
         conf.config.problem.M = M
