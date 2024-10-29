@@ -2,12 +2,12 @@ from experiment_setup import PhaseRetrieval_Experiment
 
 
 pre = 'params/mirror_params_phase'
-pre = 'params/sphere_phase'
+#pre = 'params/sphere_phase'
 
-for conf_name in [pre +'N1.yaml']:
+for conf_name in ['N0', 'N1', 'N2', 'N3']:
     num_runs = 20
     success = 0
-    conf = PhaseRetrieval_Experiment(conf_name)
+    conf = PhaseRetrieval_Experiment(pre + conf_name + '.yaml')
     #%%
     for run in range(num_runs):
         xin = conf.init_x()
@@ -22,5 +22,5 @@ for conf_name in [pre +'N1.yaml']:
               + str(ev['consensus_diff'][-1]))
     #%%
     print(30*'<>-<>')
-    print('Run M= ' + str(conf.config.problem.M))
+    print('Run M = ' + str(conf.config.problem.M) + ' noise = ' + str(conf.config.problem.sigma_noise))
     print('Success Rate: ' + str(success/num_runs))
