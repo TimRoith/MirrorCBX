@@ -3,8 +3,10 @@ from experiment_setup import PhaseRetrieval_Experiment
 
 
 pre = 'params/mirror_params_phase'
-for conf_name in [pre +'500.yaml']:
-    num_runs = 2
+pre = 'params/sphere_phase'
+
+for conf_name in [pre +'N1.yaml']:
+    num_runs = 20
     success = 0
     conf = PhaseRetrieval_Experiment(conf_name)
     #%%
