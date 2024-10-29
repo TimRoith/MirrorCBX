@@ -5,7 +5,7 @@ dyn:
     dt: 0.05
     lamda: 1
     alpha: 5.
-    M: 10
+    M: 1000
     N: 100
     sigma: .5
     noise: 'isotropic'
@@ -14,7 +14,7 @@ dyn:
     f_dim: '3D'
     track_args: {'names':['x', 'drift', 'consensus']}
 init:
-    name: 'normal'
+    name: 'sphere'
     mean: 0.
     std: 1.
 scheduler:

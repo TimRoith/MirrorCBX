@@ -19,7 +19,7 @@ init:
     std: 1.
 problem:
     d: 100
-    M: 1000
+    M: 1500
     constr: 'Sphere'
     obj: ''
     sigma_noise: 0.0

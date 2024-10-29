@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mirrorcbx.utils import save_conf_to_table
 import cbx.utils.success as scc
-import scienceplots
 #%%
 exp = 'Sphere'
 if exp == 'Plane':

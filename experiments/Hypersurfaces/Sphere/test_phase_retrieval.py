@@ -1,7 +1,6 @@
 from experiment_setup import PhaseRetrieval_Experiment
 
 
-
 pre = 'params/mirror_params_phase'
 pre = 'params/sphere_phase'
 
@@ -19,6 +18,8 @@ for conf_name in [pre +'N1.yaml']:
         
         ev = conf.eval_run(dyn)
         success += ev['success']
+        print('Run M = ' + str(conf.config.problem.M) + ', num success = ' + str(success) + ' dist= '
+              + str(ev['consensus_diff'][-1]))
     #%%
     print(30*'<>-<>')
     print('Run M= ' + str(conf.config.problem.M))

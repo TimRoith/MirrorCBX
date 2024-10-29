@@ -5,7 +5,7 @@ dyn:
     dt: 0.1
     lamda: 1
     alpha: 5.
-    M: 100
+    M: 1000
     N: 100
     sigma: .3
     noise: 'isotropic'

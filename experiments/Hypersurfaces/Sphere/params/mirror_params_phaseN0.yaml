@@ -4,12 +4,12 @@ dyn:
     name: 'MirrorCBO'
     dt: 0.1
     lamda: 1
-    alpha: 1e1
+    alpha: 1.
     M: 1
     N: 100
-    sigma: .15
+    sigma: .2
     noise: 'isotropic'
-    max_it: 5000
+    max_it: 10000
     verbosity: 0
     f_dim: '3D'
     track_args: {'names':['consensus']}
@@ -18,8 +18,8 @@ init:
     mean: 0.
     std: 1.
 problem:
-    d: 100
-    M: 1000
+    d: 32
+    M: 128
     constr: 'Sphere'
     obj: ''
     sigma_noise: 0.0
