@@ -1,7 +1,7 @@
 from mirrorcbx.utils import ExperimentConfig
 from mirrorcbx.mirrormaps import ProjectionSphere, MirrorMaptoPostProcessProx
 from mirrorcbx.regularization import regularize_objective
-from phase_retrieval import operator, objective, get_error_min
+from phase_retrieval import operator, objective, get_error_min, WirtingerFlow
 from cbx.objectives import Ackley
 from cbx.scheduler import multiply
 import numpy as np
@@ -15,6 +15,18 @@ class PhaseRetrieval_Experiment(ExperimentConfig):
     def set_problem_kwargs(self,):
         self.obj = self.config.problem.obj
         self.d   = self.config.problem.d + 1
+        
+    def eval_Wirtinger_Flow(self,):
+        #%% compute Wirtinger Flow
+        x = WirtingerFlow(
+            self.f, self.y, 
+            max_it=10000, 
+            tau_0 = 10, mu_max=1.
+        )
+        e = get_error_min(self.get_minimizer(), x)
+        success = e < self.config.success.tol
+        return {'success': success}
+        
         
     def set_constr(self,):
         self.constr = self.config.problem.constr
@@ -45,10 +57,11 @@ class PhaseRetrieval_Experiment(ExperimentConfig):
         # get frame vectors
         f = np.random.normal(0, 1, (M, d))
         f = f/np.linalg.norm(f, axis=-1, keepdims=True)
+        self.f = f
         self.x_true = np.random.normal(0, 1, (d,))
         op = operator(f)
         y = op(self.x_true) + sigma_noise * np.random.normal(0, 1, size=(M,))
-
+        self.y = y
         return objective(y, f)
     
     def get_scheduler(self,):
