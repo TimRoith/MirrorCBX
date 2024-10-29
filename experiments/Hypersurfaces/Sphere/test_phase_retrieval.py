@@ -1,14 +1,13 @@
 from experiment_setup import PhaseRetrieval_Experiment
 
 
-conf = PhaseRetrieval_Experiment('params/mirror_params_phase.yaml')
-
-for M in [500, 1000]:
+pre = 'params/mirror_params_phase'
+for conf_name in [pre +'N1.yaml']:
     num_runs = 20
     success = 0
+    conf = PhaseRetrieval_Experiment(conf_name)
     #%%
     for run in range(num_runs):
-        conf.config.problem.M = M
         xin = conf.init_x()
         dyn = conf.dyn_cls(conf.get_objective(), x = xin, **conf.dyn_kwargs)
         
@@ -17,9 +16,9 @@ for M in [500, 1000]:
         
         ev = conf.eval_run(dyn)
         success += ev['success']
-        print('Run M= ' + str(M) + ', num success= ' + str(success) + ' dist= '
+        print('Run M= ' + str(conf.config.problem.M) + ', num success= ' + str(success) + ' dist= '
               + str(ev['consensus_diff'][-1]))
     #%%
     print(30*'<>-<>')
-    print('Run M= ' + str(M))
+    print('Run M= ' + str(conf.config.problem.M))
     print('Success Rate: ' + str(success/num_runs))

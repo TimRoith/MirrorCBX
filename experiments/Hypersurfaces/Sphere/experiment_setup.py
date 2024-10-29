@@ -52,7 +52,7 @@ class PhaseRetrieval_Experiment(ExperimentConfig):
         return objective(y, f)
     
     def get_scheduler(self,):
-        return multiply(factor=1.01, maximum=1e15)
+        return multiply(factor=1.05, maximum=1e18)
     
     def get_minimizer(self,):
         return self.x_true
