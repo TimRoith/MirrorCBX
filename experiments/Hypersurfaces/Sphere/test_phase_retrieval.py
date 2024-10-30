@@ -3,10 +3,10 @@ from phase_retrieval import WirtingerFlow
 
 run_Wirtinger = True
 pre = 'params/mirror_params_phase'
-#pre = 'params/sphere_phase'
+pre = 'params/sphere_phase'
 
-for conf_name in ['N0', 'N1', 'N2', 'N3']:
-    num_runs = 50
+for conf_name in ['1500']:
+    num_runs = 5
     Wirtinger_success = 0
     success = 0
     conf = PhaseRetrieval_Experiment(pre + conf_name + '.yaml')
