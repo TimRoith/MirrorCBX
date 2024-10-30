@@ -89,6 +89,18 @@ class ProjectionSphere(ProjectionMirrorMap):
         
     def grad_conj(self, y):
         return self.r * y/np.linalg.norm(y,axis=-1,keepdims=True)
+    
+class ProjectionSquare(ProjectionMirrorMap):
+    def __init__(self, r=1.):
+        self.r = r
+    
+    def grad_conj(self, y):
+        s = y.shape
+        y = np.clip(y, a_min=-self.r, a_max=self.r).reshape(-1, s[-1])
+        idx = np.argmax(np.abs(y), axis=-1)
+        
+        y[np.arange(y.shape[0]), idx] = np.sign(y[np.arange(y.shape[0]), idx])
+        return y.reshape(s)
 
 
 class LogBarrierBox(MirrorMap):
@@ -216,6 +228,7 @@ mirror_dict = {
     'ProjectionBall': ProjectionBall,
     'ProjectionHyperplane': ProjectionHyperplane,
     'ProjectionSphere': ProjectionSphere,
+    'ProjectionSquare': ProjectionSquare,
     'LogBarrierBox': LogBarrierBox,
     'NonsmoothBarrier': NonsmoothBarrier,
     'weighted_L2': weighted_L2, 
