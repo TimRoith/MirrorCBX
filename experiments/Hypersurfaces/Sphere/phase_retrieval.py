@@ -54,3 +54,30 @@ def get_error_min(x_true, x):
             ]), 
         axis=0
     )
+
+
+
+def WirtingerFlow(f, y, z0=None, max_it=100, mu=0.1, tau_0=300, mu_max=0.4):
+    z = spectral_init(f,y) if z0 is None else z0.copy()
+    nz0 = np.linalg.norm(z)**2
+    M = f.shape[0]
+    
+    for i in range(max_it):
+        mu = min(1 - np.exp(-i/tau_0), mu_max)
+        g = 1/M * ((f@z)**2 - y)[:, None] * ((f[:,None,:] * f[...,None])@z)
+        z = z - (mu/nz0) * g.sum(axis=0)
+        
+        
+        #print((((f@z)**2 - y)**2).sum())
+    return z
+
+def spectral_init(f, y):
+    m,n = f.shape
+    lamda = np.sqrt(n * y.sum()/(np.linalg.norm(f.ravel())**2))
+    
+    Y = 1/m * (y[:, None,None] * (f[:,None,:] * f[...,None])).sum(axis=0)
+    l, v = np.linalg.eig(Y)
+    idx = np.argmax(l)
+    return v[:, idx] * lamda
+    
+    
