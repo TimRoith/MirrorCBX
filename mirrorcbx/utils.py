@@ -63,7 +63,12 @@ def init_sphere(mean=0, std=1., size=(1,1,1)):
     z = np.random.normal(mean, std, size)
     return z/np.linalg.norm(z,axis=-1, keepdims=True)
 
-init_dict = {'normal': init_normal, 'sphere':init_sphere}
+def init_sphere_half(mean=0, std=1., size=(1,1,1)):
+    z = np.random.normal(mean, std, size)
+    z[..., -1] *= np.sign(z[..., -1])
+    return z/np.linalg.norm(z,axis=-1, keepdims=True)
+
+init_dict = {'normal': init_normal, 'sphere':init_sphere, 'sphere-half': init_sphere_half}
 dyn_dict = {'MirrorCBO':MirrorCBO, 'SphereCBO':SphereCBO, 
             'ProxCBO': CBO, 'PenalizedCBO': CBO, 
             'DriftConstrainedCBO': DriftConstrainedCBO}
