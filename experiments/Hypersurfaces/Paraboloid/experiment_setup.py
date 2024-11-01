@@ -23,32 +23,33 @@ class QuadricMirror:
         if len(idx_c[0]) > 0:
            x[idx_c] = 1#project(self.Q, x[idx_c] * self.off)
         return x
-
+    
 
 #%%
 class Ackley_Experiment(ExperimentConfig):
     def __init__(self, conf_path):
         super().__init__(conf_path)
+        self.A = np.eye(self.d)
+        self.A[-1, -1] = 0
+        self.b = np.zeros(self.d)
+        self.b[-1] = -1
+        self.c = 0
         self.set_constr()
+
         
         
     def set_constr(self,):
         self.constr = self.config.problem.constr
         dname = self.config.dyn.name
-        A = np.eye(self.d)
-        A[-1, -1] = 0
-        b = np.zeros(self.d)
-        b[-1] = -1
-        c = 0
         if dname == 'MirrorCBO':           
-            QM = QuadricMirror(A, b, c)
+            QM = QuadricMirror(self.A, self.b, self.c)
             self.dyn_kwargs['mirrormap'] = QM
         elif dname == 'ProxCBO':
-            pp = MirrorMaptoPostProcessProx(QM)(A, b, c)
+            pp = MirrorMaptoPostProcessProx(QM)(self.A, self.b, self.c)
             self.dyn_kwargs['post_process'] = pp
         elif dname == 'DriftConstrainedCBO':
             self.dyn_kwargs['constraints'] = [{
-                'name' : 'quadric', 'A': A, 'b': b, 'c': c,
+                'name' : 'quadric', 'A': self.A, 'b': self.b, 'c': self.c,
             }]
 
     def get_objective(self,):
@@ -69,12 +70,10 @@ class Ackley_Experiment(ExperimentConfig):
             
             f = regularize_objective(
                 f, 
-                {'name':'Sphere',},
+                {'name':'Quadric', 'A': self.A, 'b': self.b, 'c': self.c},
                 lamda=lamda)
         return f
     
-    def get_scheduler(self,):
-        return multiply(factor=1.05, maximum=1e18)
     
     def get_minimizer(self,):
         if self.d == 20:    

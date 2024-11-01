@@ -22,11 +22,27 @@ class SphereDistance:
     
     def __call__(self, x):
         return np.abs(np.linalg.norm(x, axis=-1) - self.r)
+    
+class QuadricDistance:
+    def __init__(self, A = None, b = None, c = 0):
+        self.A = A
+        self.b = b
+        self.c = c
+        
+    def __call__(self, x):
+         return np.abs(
+             (x * (x@self.A)) .sum(axis=-1) + 
+             (x * self.b).sum(axis=-1) + 
+             self.c
+        )
+
 
 reg_func_dict = {
     'L1': L1,
     'Plane': HyperplaneDistance,
-    'Sphere': SphereDistance}
+    'Sphere': SphereDistance,
+    'Quadric': QuadricDistance
+}
 
 def select_reg_func(func):
     if isinstance(func, dict):
@@ -70,9 +86,10 @@ class regularization_paramter_scheduler(param_update):
     def __init__(
         self, name: str ='lamda', 
         theta = 1., 
-        theta_max = 1e3,
+        theta_max = 1e5,
         factor_theta=1.1, 
         factor_lamda=1.1,
+        lamda_max = 1e15,
         rule_mean = 'weighted'
     ):
         super().__init__(name=name)
@@ -82,6 +99,7 @@ class regularization_paramter_scheduler(param_update):
         self.factor_lamda = factor_lamda
         self.param_rule_mean = weighted_param_rule_mean if rule_mean == 'weighted' else simple_param_rule_mean
         self.params_broadcasted = False
+        self.lamda_max = lamda_max
         
     def broadcast_params(self, x):
         if not self.params_broadcasted:
@@ -97,6 +115,7 @@ class regularization_paramter_scheduler(param_update):
         self.theta[~t] = np.clip(self.theta[~t]/self.factor_theta, 
                                  a_max= self.theta_max, a_min=None)
         dyn.f.lamda[~t] *= self.factor_lamda
+        dyn.f.lamda = np.clip(dyn.f.lamda, a_max=self.lamda_max, a_min=0)
             
         
     

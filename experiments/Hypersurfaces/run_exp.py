@@ -14,7 +14,7 @@ elif exp == 'Sphere':
     save_conf_to_table(conf.config)
 elif exp == 'Paraboloid':
     from Paraboloid.experiment_setup import Ackley_Experiment
-    conf = Ackley_Experiment('Paraboloid/params/driftconstrained_params.yaml')
+    conf = Ackley_Experiment('Paraboloid/params/regularized_params.yaml')
     save_conf_to_table(conf.config)
     
 #%%

@@ -16,7 +16,7 @@ dyn:
     eps: 0.01
     sigma_indep: 0.
 init:
-    name: 'sphere'
+    name: 'normal'
     mean: 0.
     std: 1.
 scheduler:
