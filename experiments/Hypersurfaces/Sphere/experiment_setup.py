@@ -11,10 +11,7 @@ class PhaseRetrieval_Experiment(ExperimentConfig):
     def __init__(self, conf_path):
         super().__init__(conf_path)
         self.set_constr()
-        
-    def set_problem_kwargs(self,):
-        self.obj = self.config.problem.obj
-        self.d   = self.config.problem.d + 1
+        self.d += 1
         
     def eval_Wirtinger_Flow(self,):
         #%% compute Wirtinger Flow
@@ -62,21 +59,28 @@ class PhaseRetrieval_Experiment(ExperimentConfig):
         op = operator(f)
         y = op(self.x_true) + sigma_noise * np.random.normal(0, 1, size=(M,))
         self.y = y
-        return objective(y, f)
+        F = objective(y, f)
+        self.R = F.R
+        return F
     
     def get_scheduler(self,):
         return multiply(factor=1.05, maximum=1e18)
     
     def get_minimizer(self,):
         return self.x_true
-    
-    def eval_run(self, dyn):
-        x_true = self.get_minimizer()
-        c = np.array(dyn.history['consensus'])
-        e = get_error_min(x_true, dyn.f.R * c[..., :-1]).mean(axis=-1).squeeze()
-        
-        success = e[-1] < self.config.success.tol
-        return {'consensus_diff': e, 'success': success}
+
+    def set_diffs(self, x, c, const_minimizer):
+        for z, n in [(x, 'diff'), (c, 'diff_c')]:
+            if z is not None:
+                setattr(
+                    self, 
+                    n, 
+                    get_error_min(const_minimizer, self.R * z[..., :-1]).mean(axis=-1).squeeze()
+                )
+
+    def eval_success(self, c, const_minimizer):
+        num_scc = (self.diff_c[-1] < self.tol).sum()
+        return {'num': num_scc, 'rate': num_scc/c.shape[1]}
 
 class Ackley_Experiment(ExperimentConfig):
     def __init__(self, conf_path):

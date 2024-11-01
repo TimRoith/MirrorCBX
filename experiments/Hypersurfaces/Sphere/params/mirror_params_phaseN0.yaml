@@ -1,5 +1,5 @@
 name: 'mirrorcboAckleyPlane'
-path: 'Sphere/results/'
+reps: 2
 dyn:
     name: 'MirrorCBO'
     dt: 0.1

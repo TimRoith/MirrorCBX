@@ -6,6 +6,7 @@ import numpy as np
 from collections import OrderedDict
 from functools import reduce
 from cbx.scheduler import multiply, scheduler
+import cbx.utils.success as scc
 #%%
 
 
@@ -51,8 +52,8 @@ def save_param_dict_to_table(param_dict, file_name):
             file.write('\n')
             
 def save_conf_to_table(conf):
-    pdict = conf_to_dict(conf)
-    save_param_dict_to_table(pdict, conf.path + conf.name + '_params.txt')
+    pdict = conf_to_dict(conf.config)
+    save_param_dict_to_table(pdict, conf.path + 'results/' + conf.config.name + '_params.txt')
     
     
 
@@ -78,6 +79,7 @@ scheduler_dict = {'multiply': multiply}
 class ExperimentConfig:
     def __init__(self, config_path):
         self.config = OmegaConf.load(config_path)
+        self.path = config_path[:config_path.find('params/')]
         self.set_dyn_kwargs()
         self.set_problem_kwargs()
         
@@ -93,6 +95,7 @@ class ExperimentConfig:
     def set_problem_kwargs(self,):
         self.obj = self.config.problem.obj
         self.d   = self.config.problem.d
+        self.tol = getattr(self.config.problem, 'tol', 0.1)
         
     def get_scheduler(self,):
         sdyn = getattr(self.config, 'scheduler', {'name':''})
@@ -108,6 +111,45 @@ class ExperimentConfig:
             sched = scheduler([sched, reg_sched])
            
         return sched
+
+    def evaluate_dynamic(self, dyn):
+        # update number of runs
+        if not hasattr(self, 'num_runs'): self.num_runs = 0
+        self.num_runs += dyn.M
+
+        const_minimizer = self.get_minimizer()
+        fname = self.path + 'results/' + self.config.name
+        x = np.array(dyn.history['x'])[1:, ...] if 'x' in dyn.history else None
+        c = np.array(dyn.history['consensus'])[1:, ...] if 'consensus' in dyn.history else None
+
+        self.set_diffs(x, c, const_minimizer)
+        for n in [('diff'), ('diff_c')]:
+            if hasattr(self, n):
+                np.savetxt(fname + '_' + n + '.txt', getattr(self, n))
+        
+        # evaluate success
+        scc_eval = self.eval_success(c, const_minimizer)
+        if hasattr(self, 'scc_eval'):
+            self.scc_eval['num'] += scc_eval['num']
+            self.scc_eval['rate'] = self.scc_eval['num']/self.num_runs
+        else:
+            self.scc_eval = scc_eval
+
+        np.savetxt(fname + '_scc.txt', np.array([self.scc_eval['rate'], self.tol]))
+        print('Success rate: ' + str(self.scc_eval['rate'] ))
+
+    def set_diffs(self, x, c, const_minimizer):
+        for z, n in [(x, 'diff'), (c, 'diff_c')]:
+            if z is not None:
+                dd = np.linalg.norm(z - const_minimizer, axis=-1).mean(axis=(-2,-1))
+                if not hasattr(self, n): 
+                    setattr(self, n, dd)
+                else:
+                    setattr(self, n, 0.5 * (getattr(self, n) + dd)) # assumes equal sub run length
+
+    def eval_success(self, c, const_minimizer):
+        scc_eval = scc.dist_to_min_success(c, const_minimizer, tol = self.tol)
+        return scc_eval
             
         
         
