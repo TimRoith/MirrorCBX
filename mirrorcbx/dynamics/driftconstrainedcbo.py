@@ -41,6 +41,26 @@ class NoConstraint(Constraint):
     def hessian(self, x):
         return np.zeros(x.shape + (x.shape[-1],))
     
+    
+class quadricConstraint(Constraint):
+    def __init__(self, A = None, b = None, c = 0):
+        self.A = A
+        self.b = b
+        self.c = c
+        
+    def __call__(self, x):
+         return (
+             (x * (x@self.A)) .sum(axis=-1) + 
+             (x * self.b).sum(axis=-1) + 
+             self.c
+        )
+        
+    def grad(self, x):
+        return 2 * x@self.A + self.b
+    
+    def hessian(self, x):
+        return 2 * self.A
+    
 class sphereConstraint(Constraint):
     def __init__(self, r=1.):
         super().__init__()
@@ -73,7 +93,9 @@ class planeConstraint(Constraint):
         return np.zeros(x.shape + (x.shape[-1],))
     
     
-const_dict = {'plane': planeConstraint, 'sphere': sphereConstraint}    
+const_dict = {'plane': planeConstraint, 
+              'sphere': sphereConstraint,
+              'quadric': quadricConstraint}    
 
 def get_constraints(const):
     CS = []
@@ -91,6 +113,19 @@ def solve_system(A, x):
     return np.linalg.solve(A, x[..., None])[..., 0]
 
 #%%
+def dc_inner_step(self,):
+    self.compute_consensus()
+    self.drift = self.x - self.consensus
+    noise = self.sigma * self.noise()
+    const_drift = (self.dt/ self.eps) * self.G.grad_squared_sum(self.x)
+    scaled_drift = self.lamda * self.dt * self.drift
+    
+    x_tilde = scaled_drift + const_drift + noise
+    A = np.eye(self.d[0]) + (self.dt/ self.eps) * self.G.hessian_squared_sum(self.x)
+    self.x -= solve_system(A, x_tilde)
+
+
+#%%
 class DriftConstrainedCBO(CBO):
     '''
     Implements the algorithm in [1]
@@ -102,21 +137,34 @@ class DriftConstrainedCBO(CBO):
     '''
     
     
-    def __init__(self, f, constraints = None, eps=0.01,  **kwargs):
+    def __init__(
+            self, f, 
+            constraints = None, eps=0.01,  
+            eps_indep=0.001, sigma_indep=0., 
+            **kwargs
+        ):
         super().__init__(f, **kwargs)
         self.G = MultiConstraint(get_constraints(constraints))
         self.eps = eps
+        self.eps_indep = eps_indep
+        self.sigma_indep = sigma_indep
         
         
     def inner_step(self,):
-        self.compute_consensus()
-        self.drift = self.x - self.consensus
-        noise = self.sigma * self.noise()
-        const_drift = (self.dt/ self.eps) * self.G.grad_squared_sum(self.x)
-        scaled_drift = self.lamda * self.dt * self.drift
+        self.indep_noise_step()
+        dc_inner_step(self)
         
-        x_tilde = scaled_drift + const_drift + noise
-        A = np.eye(self.d[0]) + (self.dt/ self.eps) * self.G.hessian_squared_sum(self.x)
-        self.x -= solve_system(A, x_tilde)
-
+    def indep_noise_step(self,):
+        if self.sigma_indep > 0 and (self.consensus is not None):
+            while True:
+                cxd = (np.linalg.norm(self.x - self.consensus, axis=-1)**2).mean(axis=-1)/self.d[0]
+                idx = np.where(cxd < self.eps_indep)
+                if len(idx[0]) == 0:
+                    break
+                z = np.random.normal(0,1, size=((len(idx[0]),) + self.x.shape[1:]))
+                self.x[idx[0], ...] += (
+                    self.sigma_indep * 
+                    self.dt**0.5 * 
+                    z
+                )
 

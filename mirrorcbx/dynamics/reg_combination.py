@@ -87,7 +87,7 @@ def get_constraints(const):
     return CS
 
 #%% regularized CBO ver 2 -- by Urbain et al.
-class reg_combination(CBO):
+class RegCombinationCBO(CBO):
     '''
     Implements the algorithm in [1]
     

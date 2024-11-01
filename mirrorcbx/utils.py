@@ -71,7 +71,7 @@ def init_sphere_half(mean=0, std=1., size=(1,1,1)):
 init_dict = {'normal': init_normal, 'sphere':init_sphere, 'sphere-half': init_sphere_half}
 dyn_dict = {'MirrorCBO':MirrorCBO, 'SphereCBO':SphereCBO, 
             'ProxCBO': CBO, 'PenalizedCBO': CBO, 
-            'DriftConstrainedCBO': DriftConstrainedCBO}
+            'DriftConstrainedCBO': DriftConstrainedCBO,}
 scheduler_dict = {'multiply': multiply}
 
 
