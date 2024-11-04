@@ -1,11 +1,10 @@
-import numpy as np
 import matplotlib.pyplot as plt
 from mirrorcbx.utils import save_conf_to_table
 from pkgutil import importlib
 #%%
-problem = 'Hypersurfaces:Sphere'
-experiment_name = 'PhaseRetrieval_Experiment'#'Ackley_Experiment' 
-params  = 'mirror_params_phaseN0'
+problem = 'ElasticNet:deconvolution'
+experiment_name = 'Deconvolution_Experiment'#'Ackley_Experiment' 
+params  = 'mirror_params'
 
 #%%
 CFG = getattr(
@@ -19,9 +18,8 @@ param_path = problem.replace(':','/') + '/params/' + params + '.yaml'
 conf = CFG(param_path)
 save_conf_to_table(conf)
 #%%
-for reps in range(getattr(conf.config, 'reps', 1)):
+for rep in range(getattr(conf.config, 'reps', 1)):
     f = conf.get_objective()
-    const_minimizer = conf.get_minimizer()
     x = conf.init_x()
     
     dyn = conf.dyn_cls(f, x=x, **conf.dyn_kwargs)

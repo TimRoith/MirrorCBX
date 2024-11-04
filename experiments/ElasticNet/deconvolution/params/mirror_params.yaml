@@ -1,0 +1,29 @@
+name: 'mirrorcboDeconvolution'
+dyn:
+    name: 'MirrorCBO'
+    dt: 0.02
+    lamda: 1
+    alpha: 30.
+    M: 1
+    N: 1000
+    sigma: 3.1
+    noise: 'anisotropic'
+    max_it: 400
+    verbosity: 0
+    f_dim: '3D'
+    track_args: {'names':['x', 'y', 'consensus']}
+    #batch_args: {'size':170, 'partial':True}
+init:
+    name: 'uniform'
+    low: 0.
+    high: 1
+reg:
+    lamda: 0.5
+scheduler:
+    name: 'multiply'
+    factor: 1.05
+    maximum: 1e18
+problem:
+    d: 50
+    obj: 'Deconvolution'
+    num_signals: 3

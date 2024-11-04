@@ -5,7 +5,7 @@ from omegaconf import OmegaConf
 import numpy as np
 from collections import OrderedDict
 from functools import reduce
-from cbx.scheduler import multiply, scheduler
+from cbx.scheduler import multiply, scheduler, effective_sample_size
 import cbx.utils.success as scc
 #%%
 
@@ -55,7 +55,8 @@ def save_conf_to_table(conf):
     pdict = conf_to_dict(conf.config)
     save_param_dict_to_table(pdict, conf.path + 'results/' + conf.config.name + '_params.txt')
     
-    
+def init_uniform(low=0, high=1., size=(1,1,1)):
+    return np.random.uniform(low, high, size)   
 
 def init_normal(mean=0, std=1., size=(1,1,1)):
     return np.random.normal(mean, std, size)
@@ -69,11 +70,15 @@ def init_sphere_half(mean=0, std=1., size=(1,1,1)):
     z[..., -1] *= np.sign(z[..., -1])
     return z/np.linalg.norm(z,axis=-1, keepdims=True)
 
-init_dict = {'normal': init_normal, 'sphere':init_sphere, 'sphere-half': init_sphere_half}
+init_dict = {
+    'uniform': init_uniform,
+    'normal': init_normal, 
+    'sphere':init_sphere, 
+    'sphere-half': init_sphere_half}
 dyn_dict = {'MirrorCBO':MirrorCBO, 'SphereCBO':SphereCBO, 
             'ProxCBO': CBO, 'PenalizedCBO': CBO, 
             'DriftConstrainedCBO': DriftConstrainedCBO,}
-scheduler_dict = {'multiply': multiply}
+scheduler_dict = {'multiply': multiply, 'effective': effective_sample_size}
 
 
 class ExperimentConfig:
@@ -128,7 +133,7 @@ class ExperimentConfig:
                 np.savetxt(fname + '_' + n + '.txt', getattr(self, n))
         
         # evaluate success
-        scc_eval = self.eval_success(c, const_minimizer)
+        scc_eval = self.eval_success(dyn.consensus, const_minimizer)
         if hasattr(self, 'scc_eval'):
             self.scc_eval['num'] += scc_eval['num']
             self.scc_eval['rate'] = self.scc_eval['num']/self.num_runs

@@ -1,40 +1,67 @@
-from mirrorcbx import MirrorCBO
-from exp_setup import norm_sphere_experiment
-from mirrorcbx.plotting import PlotMirrorDynamicHistory
 import numpy as np
 import matplotlib.pyplot as plt
-from cbx.scheduler import effective_sample_size, multiply
+from matplotlib.patches import Rectangle
+from mirrorcbx.utils import save_conf_to_table
+from pkgutil import importlib
+from cbx.plotting import contour_2D
 #%%
-E = norm_sphere_experiment()
+np.random.seed(2536309824)
+#%%
+problem = ''
+experiment_name = 'NormSphere_Experiment'#'Ackley_Experiment' 
+params  = 'mirror_params_vis'
 
-dyn = MirrorCBO(
-    E.get_objective(),
-    f_dim='3D',
-    mirrormap={'name':'ElasticNet', 'lamda':1.2},
-    dt = 0.1,
-    sigma= 1.5,
-    noise = 'isotropic',
-    alpha = 1.,
-    verbosity=0,
-    x=np.random.normal(0,1., size=(200,50,2)),  max_it = 300, 
-    track_args={'names':['x', 'drift', 'y', 'consensus']})
+#%%
+CFG = getattr(
+    importlib.import_module(
+        problem.replace(':','.') + 'experiment_setup'
+    ),
+    experiment_name
+)
 
-sched = multiply(factor=1.05, maximum=1e5)
+param_path = './params/' + params + '.yaml'
+conf = CFG(param_path)
+save_conf_to_table(conf)
+#%%
+f = conf.get_objective()
+x = conf.init_x()
+
+dyn = conf.dyn_cls(f, x=x, **conf.dyn_kwargs)
+sched = conf.get_scheduler()
 dyn.optimize(sched=sched)
 #%%
-E.eval_statistics(dyn)
+x, y = [np.array(dyn.history[k]) for k in ['x', 'y']]
 plt.close('all')
+fig, ax = plt.subplots(1,2,figsize=(15,7))
+l = dyn.mirrormap.lamda
 
-plt.fill_between(E.times, np.min(E.diff, axis=-1),np.max(E.diff, axis=-1),color='orange', alpha=0.5)
-plt.semilogy(E.times, E.diff_mean)
-#%%
-p = PlotMirrorDynamicHistory(dyn, 
-                        objective_args={'x_min':-2, 'x_max':2, 
-                                        'num_pts':100, 'levels':50}, 
-                        drift_args={'width':0.003},
-                        plot_drift=True,
-                        num_run = E.bad_idx)
-p.run_plots(wait=0.1, freq=1)
+mm_kwargs = {'color':'b', 'linestyle' : ':', 'linewidth':2}
+for xx in [1, -1]:
+    for k in[1,-1]: ax[1].plot(*[[xx, xx], [-4, 4]][::k], **mm_kwargs)
+for k in [1,-1]: ax[0].plot(*[[0, 0], [-4, 4]][::k], **mm_kwargs)
+ax[1].plot([1.5, 1.5], [-4, 4], color='k', linestyle='--', alpha=0.9, linewidth=2)
+
+
+for k, z in enumerate([x, y]):
+    contour_2D(f, ax=ax[k], num_pts=40, cmap=plt.cm.terrain, 
+                            antialiased=False, levels=60, 
+                            x_max=4, x_min=-2,alpha=0.7)
+    num_pcs = 10
+    colors = iter(plt.cm.Reds(np.linspace(0.5,1.,num_pcs)))
+    for j in range(num_pcs):
+        c = next(colors)
+        ax[k].plot(*[z[:, 0, j, i] for i in [0,1]], color=c, linewidth=2., rasterized=False)
+        ax[k].scatter(*[z[-1, 0, j, i] for i in [0,1]], color='w', 
+                      rasterized=False, zorder=10)
+        ax[k].scatter(*[z[0, 0, j, i] for i in [0,1]], color=c, rasterized=False)
+    
+    ax[k].axis('square')
+    ax[k].set_xlim([-1.5,3.5])
+    ax[k].set_ylim([-2,2.])
+    
+plt.tight_layout(pad=0.)
+plt.savefig('results/norm_sphere_mirror.pdf',)
+    
 
 
 

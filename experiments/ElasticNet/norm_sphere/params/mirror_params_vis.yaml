@@ -1,0 +1,28 @@
+name: 'mirrorcboAckleyPlane'
+path: 'Hyperplane/results/'
+dyn:
+    name: 'MirrorCBO'
+    dt: 0.01
+    lamda: 1
+    alpha: 1
+    M: 1
+    N: 50
+    sigma: .1
+    noise: 'isotropic'
+    max_it: 1000
+    verbosity: 0
+    f_dim: '3D'
+    track_args: {'names':['x', 'drift', 'y', 'consensus']}
+init:
+    name: 'normal'
+    mean: 0.
+    std: 1
+reg:
+    lamda: 1
+scheduler:
+    name: 'multiply'
+    factor: 1.01
+    maximum: 1e5
+problem:
+    d: 2
+    obj: 'norm_sphere'
