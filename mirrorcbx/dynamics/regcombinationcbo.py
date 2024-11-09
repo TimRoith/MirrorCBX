@@ -119,10 +119,10 @@ class RegCombinationCBO(CBO):
             self.correction(self.lamda * self.dt * self.drift) +
             self.s)
         
-        for i in range(self.M):
-            for j in range(self.N):
-                self.x[i, j, :] = np.linalg.solve ( np.eye(self.x.shape[-1]) + 4*(self.dt / self.epsilon) * self.G[i, j], 
-                                                   self.x[i, j, :] )
+        self.x = np.linalg.solve(
+            np.eye(self.x.shape[-1]) + 4 * (self.dt / self.eps) * self.G.constraints(self.x), 
+            self.x
+            )
         # self.error = np.linalg.norm(self.consensus - global_min, ord =2, axis = -1)/np.sqrt(self.x.shape[-1])
         # self.error = np.linalg.norm(self.x - np.tile(global_min, (1, self.x.shape[1], 1)), ord =2, axis = -1)/np.sqrt(self.x.shape[-1])
         self.error = np.linalg.norm(self.consensus - np.tile(global_min, (self.x.shape[0], 1, 1)), ord =2, axis = -1)/np.sqrt(self.x.shape[-1])
