@@ -1,5 +1,5 @@
 from cbx.dynamics import CBO
-from mirrorcbx.dynamics import MirrorCBO, SphereCBO, DriftConstrainedCBO
+from mirrorcbx.dynamics import MirrorCBO, SphereCBO, DriftConstrainedCBO, KickingMirrorCBO, PolarMirrorCBO
 from mirrorcbx.regularization import regularization_paramter_scheduler
 from omegaconf import OmegaConf
 import numpy as np
@@ -53,7 +53,7 @@ def save_param_dict_to_table(param_dict, file_name):
             
 def save_conf_to_table(conf):
     pdict = conf_to_dict(conf.config)
-    save_param_dict_to_table(pdict, conf.path + 'results/' + conf.config.name + '_params.txt')
+    save_param_dict_to_table(pdict, conf.path + 'results/' + conf.name + '_params.txt')
     
 def init_uniform(low=0, high=1., size=(1,1,1)):
     return np.random.uniform(low, high, size)   
@@ -75,9 +75,13 @@ init_dict = {
     'normal': init_normal, 
     'sphere':init_sphere, 
     'sphere-half': init_sphere_half}
+
 dyn_dict = {'MirrorCBO':MirrorCBO, 'SphereCBO':SphereCBO, 
-            'ProxCBO': CBO, 'PenalizedCBO': CBO, 
-            'DriftConstrainedCBO': DriftConstrainedCBO,}
+            'ProxCBO': CBO, 'PenalizedCBO': CBO, 'CBO':CBO,
+            'DriftConstrainedCBO': DriftConstrainedCBO,
+            'KickingMirrorCBO': KickingMirrorCBO,
+            'PolarMirrorCBO': PolarMirrorCBO}
+
 scheduler_dict = {'multiply': multiply, 'effective': effective_sample_size}
 
 
@@ -85,8 +89,10 @@ class ExperimentConfig:
     def __init__(self, config_path):
         self.config = OmegaConf.load(config_path)
         self.path = config_path[:config_path.find('params/')]
+        self.name = config_path[config_path.find('params/')+len('params/'):].split('.')[0]
         self.set_dyn_kwargs()
         self.set_problem_kwargs()
+        save_conf_to_table(self)
         
     def get_objective(self,):
         raise NotImplementedError('This class does not implement the function: ' + 
@@ -110,10 +116,11 @@ class ExperimentConfig:
         else:
             sched = None
             
-        if self.config['dyn']['name'] == 'PenalizedCBO':
+        if self.config['dyn']['name'] == 'PenalizedCBO': 
             reg_sched_kwargs = getattr(self.config, 'reg_sched', {})
-            reg_sched = regularization_paramter_scheduler(**reg_sched_kwargs)
-            sched = scheduler([sched, reg_sched])
+            if reg_sched_kwargs.get('use', True):
+                reg_sched = regularization_paramter_scheduler(**reg_sched_kwargs)
+                sched = scheduler([sched, reg_sched])
            
         return sched
 
@@ -123,7 +130,7 @@ class ExperimentConfig:
         self.num_runs += dyn.M
 
         const_minimizer = self.get_minimizer()
-        fname = self.path + 'results/' + self.config.name
+        fname = self.path + 'results/' + self.name
         x = np.array(dyn.history['x'])[1:, ...] if 'x' in dyn.history else None
         c = np.array(dyn.history['consensus'])[1:, ...] if 'consensus' in dyn.history else None
 

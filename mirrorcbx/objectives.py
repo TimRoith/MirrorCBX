@@ -10,3 +10,20 @@ class norm_sphere:
         return np.abs(
             np.linalg.norm(x - self.center, axis=-1, ord=self.p) - self.radius
             )
+    
+    
+def matrix_to_callable(A):
+    def op(x):
+        return x@A.T
+    return op
+    
+class data_fidelity:
+    def __init__(self, f, A):
+        self.A = A if callable(A) else matrix_to_callable(A)
+        self.f = f
+        
+    def __call__(self, theta):
+        return 0.5 * np.linalg.norm(self.A(theta) - self.f, axis=-1)**2
+    
+    def grad(self, theta):
+        return self.A.adjoint(self.A(theta) - self.f)

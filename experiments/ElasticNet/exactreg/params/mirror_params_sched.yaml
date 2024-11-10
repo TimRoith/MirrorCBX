@@ -1,0 +1,28 @@
+dyn:
+    name: 'MirrorCBO'
+    dt: 0.05
+    lamda: 1.
+    alpha: 100
+    M: 100
+    N: 150
+    sigma: .5
+    noise: 'isotropic'
+    max_it: 1000
+    verbosity: 0
+    f_dim: '3D'
+    track_args: {'names':['x', 'y', 'consensus']}
+init:
+    name: 'normal'
+    mean: 0.
+    std: 1.
+reg:
+    lamda: 1.
+    plamda: 0.0
+scheduler:
+    name: 'multiply'
+    factor: 1.01
+    maximum: 1e15
+problem:
+    d: 2
+    obj: 'data_fid'
+reps: 1

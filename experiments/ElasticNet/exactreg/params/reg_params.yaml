@@ -1,0 +1,29 @@
+dyn:
+    name: 'PenalizedCBO'
+    dt: 0.05
+    lamda: 1.
+    alpha: 1000000
+    M: 100
+    N: 150
+    sigma: .5
+    noise: 'isotropic'
+    max_it: 400
+    verbosity: 0
+    f_dim: '3D'
+    track_args: {'names':['x', 'consensus']}
+init:
+    name: 'normal'
+    mean: 0.
+    std: 1.
+reg:
+    plamda: .001
+reg_sched:
+    use: False
+scheduler:
+    name: 'multiply'
+    factor: 1.1
+    maximum: 1e15
+problem:
+    d: 2
+    obj: 'data_fid'
+reps: 10

@@ -2,6 +2,11 @@ from mirrorcbx.utils import ExperimentConfig
 import numpy as np
 import cbx
 from numpy.fft import fft, ifft, fftshift, ifftshift
+
+#%%
+def select_experiment(conf_path):
+    return Deconvolution_Experiment(conf_path)
+
 #%%
 class convolution_operator:
     def __init__(self, k, size=None, downsampling = 1):
@@ -26,17 +31,17 @@ class convolution_operator:
     def __call__(self, x):
         y = np.real(ifftshift(ifft(self.k_fft * fft(x, axis=-1), axis=-1),axes=-1))
         return y[..., np.arange(0,y.shape[-1], self.downsampling)]
-        
-class DatafidelityLoss():
-    def __init__(self, f, A):
-        self.A = A
-        self.f = f
-        
-    def __call__(self, theta):
-        return 0.5 * np.linalg.norm(self.A(theta) - self.f, axis=-1)**2
     
-    def grad(self, theta):
-        return self.A.adjoint(self.A(theta) - self.f)
+    def adjoint(self, y):
+        if self.downsampling:
+            y_adj = np.zeros(shape=(y.shape[0], 2*y.shape[1]))
+            #y_adj[:, np.arange(1,2*y.shape[1],2)] = y.copy()
+            y_adj[:, np.arange(0,2*y.shape[1],2)] = y.copy()
+        else:
+            y_adj = y
+        
+        x = np.real(ifft(self.j_fft * fft(y_adj, axis=1), axis=1))
+        return x
         
 #%%
 class Deconvolution_Experiment(ExperimentConfig):

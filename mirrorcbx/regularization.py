@@ -2,9 +2,19 @@ import numpy as np
 from cbx.scheduler import param_update
 
 #%%
-class L1:
+class L0:
+    def __init__(self, lamda=1.):
+        self.lamda = lamda
+    
     def __call__(self, x):
-        return np.linalg.norm(x, ord=1, axis=-1)
+        return self.lamda * (~np.isclose(x, 0)).sum(axis=-1)
+    
+class L1:
+    def __init__(self, lamda=1.):
+        self.lamda = lamda
+    
+    def __call__(self, x):
+        return self.lamda * np.linalg.norm(x, ord=1, axis=-1)
     
 class HyperplaneDistance:
     def __init__(self, a=1, b=0):
@@ -38,6 +48,7 @@ class QuadricDistance:
 
 
 reg_func_dict = {
+    'L0': L0,
     'L1': L1,
     'Plane': HyperplaneDistance,
     'Sphere': SphereDistance,
@@ -56,11 +67,11 @@ def select_reg_func(func):
     
 #%%
 class regularize_objective:
-    def __init__(self, f, reg_func, lamda = 1.):
+    def __init__(self, f, reg_func, lamda = 1., lamda_broadcasted = False):
         self.f = f
         self.reg_func = select_reg_func(reg_func)
         self.lamda = lamda
-        self.lamda_broadcasted = False
+        self.lamda_broadcasted = lamda_broadcasted
         
     def __call__(self, x):
         self.broadcast_lamda(x)
