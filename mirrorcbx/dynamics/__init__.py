@@ -1,5 +1,5 @@
 from .mirrorcbo import MirrorCBO, PolarMirrorCBO, KickingMirrorCBO
-from .regcombination import RegCombinationCBO
+from .regcombinationcbo import RegCombinationCBO
 from .spherecbo import SphereCBO
 from .driftconstrainedcbo import DriftConstrainedCBO
 
