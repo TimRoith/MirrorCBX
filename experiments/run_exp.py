@@ -3,7 +3,7 @@ from mirrorcbx.utils import save_conf_to_table
 from pkgutil import importlib
 #%%
 problem = 'ElasticNet:deconvolution'
-params  = 'MirrorCBO'
+params  = 'mirror'
 
 #%%
 CFG = getattr(
