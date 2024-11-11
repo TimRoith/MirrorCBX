@@ -12,10 +12,14 @@ class norm_sphere:
             )
     
     
-def matrix_to_callable(A):
-    def op(x):
-        return x@A.T
-    return op
+class matrix_to_callable:
+    def __init__(self, A):
+        self.A = A
+        
+    def __call__(self, x):
+        return x@self.A.T
+    def adjoint(self, y):
+        return y@self.T
     
 class data_fidelity:
     def __init__(self, f, A):

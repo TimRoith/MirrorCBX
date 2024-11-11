@@ -1,0 +1,2 @@
+dt & alpha & lamda & noise & sigma & M & N & d & max_it & batch_args & scheduler & init & problem\\
+0.1 & 10000.0 & 1 & anisotropic & 2.0 & 1 & 1000 & None & 1000 & None & {'name': 'multiply', 'factor': 1.05, 'maximum': 1e+18} & {'name': 'uniform', 'low': 0.0, 'high': 1} & {'d': 100, 'obj': 'Deconvolution', 'num_signals': 5, 'noise_lvl': 0.05}\\

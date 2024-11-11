@@ -15,8 +15,10 @@ CFG = getattr(
 
 param_path = problem.replace(':','/') + '/params/' + params + '.yaml'
 conf = CFG(param_path)
+delete_dyn = True
 #%%
-for rep in range(getattr(conf.config, 'reps', 1)):
+reps = getattr(conf.config, 'reps', 1)
+for rep in range(reps):
     f = conf.get_objective()
     x = conf.init_x()
     
@@ -26,6 +28,9 @@ for rep in range(getattr(conf.config, 'reps', 1)):
     
     # Evaluate experiment
     conf.evaluate_dynamic(dyn)
+    
+    if rep < reps - 1:
+        del dyn
 
 #%% plot rate
 plt.close('all')

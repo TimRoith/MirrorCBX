@@ -1,12 +1,11 @@
-name: 'mirrorcboDeconvolution'
 dyn:
-    name: 'MirrorCBO'
-    dt: 0.02
+    name: 'PenalizedCBO'
+    dt: 0.1
     lamda: 1
-    alpha: 1e2
+    alpha: 1e4
     M: 1
     N: 1000
-    sigma: 3.
+    sigma: 2.
     noise: 'anisotropic'
     max_it: 1000
     verbosity: 0
@@ -18,22 +17,21 @@ init:
     low: 0.
     high: 1
 reg:
-    name: L0
-    plamda: 0.001
-mirrormap:
-    name: ElasticNet
-    lamda: 1
+    name: L1
+    plamda: 2.1
+reg_sched:
+    use: False
 scheduler:
     name: 'multiply'
     factor: 1.05
     maximum: 1e18
-reps: 10
+reps: 1
 problem:
     d: 100
     obj: 'Deconvolution'
-    num_signals: 3
-    noise_lvl: 0.01
-postprocess:
-    name: default
-    indep_sigma: 0.01
+    num_signals: 5
+    noise_lvl: 0.05
+indep_noise:
+    indep_sigma: 0.05
     patience: 10
+    reset_alpha: 1e15

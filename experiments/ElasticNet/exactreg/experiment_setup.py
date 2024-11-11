@@ -2,7 +2,6 @@ from mirrorcbx.utils import ExperimentConfig
 from mirrorcbx.regularization import regularize_objective
 from mirrorcbx.objectives import norm_sphere, data_fidelity
 from cbx.scheduler import param_update
-from cbx.dynamics.polarcbo import kernel
 import numpy as np
 
 def select_experiment(conf_path):

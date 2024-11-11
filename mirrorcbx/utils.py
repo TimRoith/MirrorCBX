@@ -70,11 +70,18 @@ def init_sphere_half(mean=0, std=1., size=(1,1,1)):
     z[..., -1] *= np.sign(z[..., -1])
     return z/np.linalg.norm(z,axis=-1, keepdims=True)
 
+def init_sparse_uniform(low=0, high=1., p = 1, size=(1,1,1)):
+    z = init_uniform(low=low, high=high, size=size)
+    c = np.random.choice(a=[False, True], size=size, p=[p, 1-p])
+    z[c] = 0.
+    return z
+
 init_dict = {
     'uniform': init_uniform,
     'normal': init_normal, 
     'sphere':init_sphere, 
-    'sphere-half': init_sphere_half}
+    'sphere-half': init_sphere_half,
+    'sparse-uniform': init_sparse_uniform}
 
 dyn_dict = {'MirrorCBO':MirrorCBO, 'SphereCBO':SphereCBO, 
             'ProxCBO': CBO, 'PenalizedCBO': CBO, 'CBO':CBO,
