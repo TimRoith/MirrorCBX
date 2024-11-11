@@ -3,7 +3,7 @@ from mirrorcbx.utils import save_conf_to_table
 from pkgutil import importlib
 import numpy as np
 #%%
-np.random.seed(35253324)
+np.random.seed(35253724)
 #%%
 problem = ''
 params  = 'mirror_vis2'
@@ -33,7 +33,15 @@ conf.evaluate_dynamic(dyn)
 plt.close('all')
 fig, ax = plt.subplots(1,4)
 ax[0].semilogy(conf.diff_c, color='green')
-ax[0].semilogy(np.array(dyn.history['energy']).min(axis=-1).squeeze(), color='orange')
+if hasattr(dyn.f, 'orignal_func'):
+    e = dyn.f.original_func(np.array(dyn.history['x'])).mean(axis=-1).squeeze()
+else:
+    e = np.array(dyn.history['energy']).mean(axis=-1).squeeze()
+    
+ec = np.convolve(e, np.ones(200), 'same') / 200
+
+ax[0].semilogy(e, color='orange')
+ax[0].semilogy(ec, color='red', linestyle='dashed')
 #ax[0].semilogy(np.array(dyn.history['alpha']).squeeze())
 ax[0].plot([0,dyn.it], 2*[conf.loss_thresh], linestyle='dashed')
 #

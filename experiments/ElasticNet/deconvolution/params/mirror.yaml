@@ -1,4 +1,3 @@
-name: 'mirrorcboDeconvolution'
 dyn:
     name: 'MirrorCBO'
     dt: 0.02

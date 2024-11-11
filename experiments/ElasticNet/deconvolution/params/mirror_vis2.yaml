@@ -1,8 +1,8 @@
 dyn:
     name: 'MirrorCBO'
-    dt: 0.02
+    dt: 0.1
     lamda: 1
-    alpha: 1e2
+    alpha: 1e4
     M: 1
     N: 1000
     sigma: 2.
@@ -19,24 +19,27 @@ init:
     p: 1.
 mirrormap:
     name: ElasticNet
-    lamda: 10
+    lamda: 1
 reg:
     name: L0
-    plamda: 0.001
+    plamda: 0.
 scheduler:
     name: 'multiply'
     factor: 1.05
     maximum: 1e18
+lamda_scheduler:
+    min_max: [0.0, 1.]
+    decr_incr: [0.99, 1.01]
 reps: 1
 problem:
     d: 30
     obj: 'Deconvolution'
     num_signals: 3
-    noise_lvl: .05
+    noise_lvl: .01
     kernel_var: 0.5
     kernel_width: 10
     downsampling: 2
 postprocess:
-    name: default
-    indep_noise: 0.01
-    patience: 10
+    name: noise_lvl
+    indep_sigma: 0.01
+    patience: 50

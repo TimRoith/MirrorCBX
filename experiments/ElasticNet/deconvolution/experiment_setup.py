@@ -21,21 +21,23 @@ class noise_lvl_pp:
         self.best_energy = None
         self.patience = patience
         self.reset_alpha = reset_alpha
+        self.energies = []
+        self.min_decrease = 0.99
         
     def __call__(self, dyn):
         wt = self.check_energy(dyn)
-        wl = self.check_loss(dyn)
+        #wl = self.check_loss(dyn)
         idx   = np.where(
-            wt * 
-            wl
+            wt
+            #wl
         )
         if len(idx[0]) > 0:
             z = np.random.normal(0, 1, size = (len(idx[0]), dyn.N) + dyn.d)
-            dyn.x[idx[0], ...] += self.indep_sigma * z
+            dyn.y[idx[0], ...] += self.indep_sigma * z
             dyn.alpha[idx[0],...] = np.minimum(dyn.alpha[idx[0],...], 
                                                self.reset_alpha
                                                )
-        dyn.x = np.clip(dyn.x, a_min=-100, a_max=100)
+        dyn.y = np.clip(dyn.y, a_min=-100, a_max=100)
         
     
     def check_loss(self, dyn):
@@ -43,37 +45,43 @@ class noise_lvl_pp:
         return wl
         
     def check_energy(self, dyn):
-        if self.best_energy is None: 
-            self.best_energy = float('inf') * np.ones((dyn.M))
-            self.wait = np.zeros((dyn.M))
-        
-        self.wait += 1
         e = dyn.energy.min(axis=-1).copy()
-        idx = np.where(self.best_energy > e)
-        self.wait[idx] = 0
-        self.best_energy[idx] = e
+        self.energies.append(e)
+        self.energies = self.energies[-self.patience:]
         
-        wt = self.wait > self.patience
-        self.wait[wt] = 0
+        if len(self.energies) == self.patience:
+            wt = (self.energies[-1]/self.energies[0]) < self.min_decrease
+        else:
+            wt = np.zeros(e.shape[0], dtype=bool)
         
         return wt
     
 #%%
 class discrepancy_sched:
-    def __init__(self, min_it = 100, patience=10, N=20, 
-                 loss_thresh = 0.1):
+    def __init__(self, min_it = 100, 
+                 patience=10,
+                 loss_thresh = 0.1,
+                 decr_incr=None,
+                 min_max = None):
         self.min_it = min_it
         self.loss_thresh = loss_thresh
         self.patience = patience
+        self.decr_incr = (0.999, 1.01) if decr_incr is None else decr_incr
+        self.min_max  = (0., 1e2) if min_max is None else min_max
         
     def update(self, dyn):
-        wl = (dyn.energy.mean(axis=-1) > self.loss_thresh)
         if (hasattr(dyn.f, 'lamda') 
             and (dyn.it > self.min_it) 
             and (dyn.it%self.patience == 0)
             ):
-            dyn.f.lamda[wl, ...] *= 0.999
-            dyn.f.lamda[~wl, ...] *= 1.01
+            e = dyn.f.original_func(dyn.x)
+            wl = (e.mean(axis=-1) > self.loss_thresh)
+            dyn.f.lamda[wl, ...]  *=  self.decr_incr[0], 
+            dyn.f.lamda[~wl, ...] *=  self.decr_incr[1]
+            dyn.f.lamda = np.clip(dyn.f.lamda, 
+                                  a_min = self.min_max[0], 
+                                  a_max = self.min_max[1]
+                                  )
         
 #%%
 class convolution_operator:
@@ -142,13 +150,12 @@ class Deconvolution_Experiment(ExperimentConfig):
         )
   
     def set_post_process(self,):
-        self.loss_thresh = 0.5 * self.d//self.downsampling * self.noise_lvl**2
+        self.loss_thresh = 0.5 * (self.d//self.downsampling) * self.noise_lvl**2
         pp = getattr(self.config, 'postprocess', {'name':'default'})
         if pp['name'] == 'noise_lvl':
             self.dyn_kwargs['post_process'] = noise_lvl_pp(
                 loss_thresh = self.loss_thresh,
-                **pp.indep_noise,
-                patience=pp.patience
+                **{k:v for k,v in pp.items() if k not in ['name']}
             )
         
     def get_objective(self,):
@@ -174,7 +181,9 @@ class Deconvolution_Experiment(ExperimentConfig):
     
     def get_scheduler(self,):
         sched = super().get_scheduler()
-        return scheduler([discrepancy_sched(loss_thresh=self.loss_thresh), 
+        lamda_sched = getattr(self.config, 'lamda_scheduler', {})
+        return scheduler([discrepancy_sched(loss_thresh=self.loss_thresh,
+                                            min_max=lamda_sched.get('min_max', None)),
                           sched])
     
     def get_minimizer(self,):
