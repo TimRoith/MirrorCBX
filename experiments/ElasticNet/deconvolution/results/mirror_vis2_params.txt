@@ -1,2 +1,2 @@
 dt & alpha & lamda & noise & sigma & M & N & d & max_it & batch_args & scheduler & init & problem\\
-0.1 & 10000.0 & 1 & anisotropic & 2.0 & 1 & 1000 & None & 1000 & None & {'name': 'multiply', 'factor': 1.05, 'maximum': 1e+18} & {'name': 'sparse-uniform', 'low': 0.0, 'high': 1, 'p': 1.0} & {'d': 30, 'obj': 'Deconvolution', 'num_signals': 3, 'noise_lvl': 0.01, 'kernel_var': 0.5, 'kernel_width': 10, 'downsampling': 2}\\
+0.01 & 100000.0 & 1 & anisotropic & 2.0 & 1 & 100 & None & 5000 & None & {'name': 'multiply', 'factor': 1.05, 'maximum': 1000000000000.0} & {'name': 'sparse-uniform', 'low': 0.0, 'high': 1, 'p': 1.0} & {'d': 30, 'obj': 'Deconvolution', 'num_signals': 3, 'noise_lvl': 0.05, 'kernel_var': 0.5, 'kernel_width': 5, 'downsampling': 2}\\

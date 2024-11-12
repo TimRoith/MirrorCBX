@@ -7,7 +7,7 @@ dyn:
     N: 100
     sigma: 2.
     noise: 'anisotropic'
-    max_it: 5000
+    max_it: 10000
     verbosity: 0
     f_dim: '3D'
     track_args: {'names':['x', 'y', 'consensus', 'energy', 'alpha']}

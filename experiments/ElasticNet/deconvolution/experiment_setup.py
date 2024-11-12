@@ -14,7 +14,8 @@ def select_experiment(conf_path):
 class noise_lvl_pp:
     def __init__(self, thresh=1e-4, loss_thresh=0.1, 
                  indep_sigma=0.01, patience = 20,
-                 reset_alpha=1e7):
+                 reset_alpha=1e7, name='y',
+                 update_thresh=1e-3):
         self.thresh = thresh
         self.loss_thresh = loss_thresh
         self.indep_sigma = indep_sigma
@@ -23,21 +24,24 @@ class noise_lvl_pp:
         self.reset_alpha = reset_alpha
         self.energies = []
         self.min_decrease = 0.99
+        self.name = name
+        self.update_thresh = update_thresh
         
     def __call__(self, dyn):
-        wt = self.check_energy(dyn)
+        wt = self.check_consensus_update(dyn)
         #wl = self.check_loss(dyn)
         idx   = np.where(
             wt
             #wl
         )
+        var = getattr(dyn, self.name)
         if len(idx[0]) > 0:
             z = np.random.normal(0, 1, size = (len(idx[0]), dyn.N) + dyn.d)
-            dyn.y[idx[0], ...] += self.indep_sigma * z
+            var[idx[0], ...] += self.indep_sigma * (dyn.dt**0.5) * z
             dyn.alpha[idx[0],...] = np.minimum(dyn.alpha[idx[0],...], 
                                                self.reset_alpha
                                                )
-        dyn.y = np.clip(dyn.y, a_min=-100, a_max=100)
+        setattr(dyn, self.name, np.clip(var, a_min=-100, a_max=100))
         
     
     def check_loss(self, dyn):
@@ -51,15 +55,29 @@ class noise_lvl_pp:
         
         if len(self.energies) == self.patience:
             wt = (self.energies[-1]/self.energies[0]) < self.min_decrease
+            self.energies = []
         else:
             wt = np.zeros(e.shape[0], dtype=bool)
         
         return wt
     
+    def check_consensus_update(self, dyn):
+        if not hasattr(self, 'consensus_updates'): self.consensus_updates = []
+        wt = np.zeros((dyn.M,), dtype=bool)
+        if hasattr(self, 'consensus_old'):
+            self.consensus_updates.append(
+                np.linalg.norm(dyn.consensus - self.consensus_old)
+            )
+            if len(self.consensus_updates) == self.patience:
+                wt = np.array([self.consensus_updates]).max(axis=-1) < self.update_thresh
+                self.consensus_updates = []
+        self.consensus_old = dyn.copy(dyn.consensus)
+        return wt
+    
 #%%
 class discrepancy_sched:
     def __init__(self, min_it = 100, 
-                 patience=10,
+                 patience=100,
                  loss_thresh = 0.1,
                  decr_incr=None,
                  min_max = None):
@@ -74,7 +92,7 @@ class discrepancy_sched:
             and (dyn.it > self.min_it) 
             and (dyn.it%self.patience == 0)
             ):
-            e = dyn.f.original_func(dyn.x)
+            e = dyn.f.original_func(dyn.consensus)
             wl = (e.mean(axis=-1) > self.loss_thresh)
             dyn.f.lamda[wl, ...]  *=  self.decr_incr[0], 
             dyn.f.lamda[~wl, ...] *=  self.decr_incr[1]
@@ -183,7 +201,7 @@ class Deconvolution_Experiment(ExperimentConfig):
         sched = super().get_scheduler()
         lamda_sched = getattr(self.config, 'lamda_scheduler', {})
         return scheduler([discrepancy_sched(loss_thresh=self.loss_thresh,
-                                            min_max=lamda_sched.get('min_max', None)),
+                                            **lamda_sched),
                           sched])
     
     def get_minimizer(self,):
