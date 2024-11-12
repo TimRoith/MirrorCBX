@@ -134,7 +134,6 @@ class Deconvolution_Experiment(ExperimentConfig):
     def __init__(self, conf_path):
         super().__init__(conf_path)
         self.set_reg()
-        self.set_post_process()
         
     def set_reg(self,):
         dname = self.config.dyn.name
@@ -180,6 +179,7 @@ class Deconvolution_Experiment(ExperimentConfig):
             )
         
     def get_objective(self,):
+        self.set_post_process()
         self.x_true = np.zeros(shape = (self.d,))
         nz_points = np.random.permutation(
             np.arange(self.d)
