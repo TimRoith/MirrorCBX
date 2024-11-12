@@ -14,8 +14,9 @@ def select_experiment(conf_path):
 class noise_lvl_pp:
     def __init__(self, thresh=1e-4, loss_thresh=0.1, 
                  indep_sigma=0.01, patience = 20,
-                 reset_alpha=1e7, name='y',
-                 update_thresh=1e-3):
+                 reset_alpha=1e7, var_name='y',
+                 update_thresh=1e-3,
+                 decrease_sigma=.99):
         self.thresh = thresh
         self.loss_thresh = loss_thresh
         self.indep_sigma = indep_sigma
@@ -24,8 +25,9 @@ class noise_lvl_pp:
         self.reset_alpha = reset_alpha
         self.energies = []
         self.min_decrease = 0.99
-        self.name = name
+        self.var_name = var_name
         self.update_thresh = update_thresh
+        self.decrease_sigma = decrease_sigma
         
     def __call__(self, dyn):
         wt = self.check_consensus_update(dyn)
@@ -34,14 +36,15 @@ class noise_lvl_pp:
             wt
             #wl
         )
-        var = getattr(dyn, self.name)
+        var = getattr(dyn, self.var_name)
         if len(idx[0]) > 0:
             z = np.random.normal(0, 1, size = (len(idx[0]), dyn.N) + dyn.d)
             var[idx[0], ...] += self.indep_sigma * (dyn.dt**0.5) * z
             dyn.alpha[idx[0],...] = np.minimum(dyn.alpha[idx[0],...], 
                                                self.reset_alpha
                                                )
-        setattr(dyn, self.name, np.clip(var, a_min=-100, a_max=100))
+            self.indep_sigma *= self.decrease_sigma
+        setattr(dyn, self.var_name, np.clip(var, a_min=-100, a_max=100))
         
     
     def check_loss(self, dyn):
