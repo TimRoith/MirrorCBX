@@ -28,10 +28,19 @@ class Ackley_Experiment(ExperimentConfig):
                     'a': self.a,
                     'b': self.b
                 }
+                
             elif dname == 'ProxCBO':
                 pp = MirrorMaptoPostProcessProx(ProjectionHyperplane)(a=self.a,b= self.b)
                 self.dyn_kwargs['post_process'] = pp
+
             elif dname == 'DriftConstrainedCBO':
+                self.dyn_kwargs['constraints'] = [{
+                    'name' : 'plane',
+                    'a': self.a,
+                    'b': self.b
+                }]
+
+            elif dname == 'RegCombinationCBO':
                 self.dyn_kwargs['constraints'] = [{
                     'name' : 'plane',
                     'a': self.a,

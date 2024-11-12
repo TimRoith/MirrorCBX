@@ -1,82 +1,88 @@
 from mirrorcbx.utils import ExperimentConfig
 from mirrorcbx.mirrormaps import ProjectionSphere, MirrorMaptoPostProcessProx
 from mirrorcbx.regularization import regularize_objective
-from phase_retrieval import operator, objective, get_error_min, WirtingerFlow
+# from phase_retrieval import operator, objective, get_error_min, WirtingerFlow
 from cbx.objectives import Ackley
 from cbx.scheduler import multiply
 import numpy as np
 
-#%%
-class PhaseRetrieval_Experiment(ExperimentConfig):
-    def __init__(self, conf_path):
-        super().__init__(conf_path)
-        self.set_constr()
+# #%%
+# class PhaseRetrieval_Experiment(ExperimentConfig):
+#     def __init__(self, conf_path):
+#         super().__init__(conf_path)
+#         self.set_constr()
         
-    def set_problem_kwargs(self,):
-        self.obj = self.config.problem.obj
-        self.d   = self.config.problem.d + 1
+#     def set_problem_kwargs(self,):
+#         self.obj = self.config.problem.obj
+#         self.d   = self.config.problem.d + 1
         
-    def eval_Wirtinger_Flow(self,):
-        #%% compute Wirtinger Flow
-        x = WirtingerFlowBackTracking(
-            self.f, self.y, 
-            max_it=10000, 
-            mu0=100,
-        )
-        e = get_error_min(self.get_minimizer(), x)
-        success = e < self.config.success.tol
-        return {'success': success}
+#     def eval_Wirtinger_Flow(self,):
+#         #%% compute Wirtinger Flow
+#         x = WirtingerFlow(
+#             self.f, self.y, 
+#             max_it=10000, 
+#             tau_0 = 10, mu_max=1.
+#         )
+#         e = get_error_min(self.get_minimizer(), x)
+#         success = e < self.config.success.tol
+#         return {'success': success}
         
         
-    def set_constr(self,):
-        self.constr = self.config.problem.constr
-        if self.constr == 'Sphere':
-            dname = self.config.dyn.name
-            if dname == 'MirrorCBO':
-                self.dyn_kwargs['mirrormap'] = {
-                    'name':'ProjectionSphere',
-                    }
-            elif dname == 'SphereCBO':
-                self.dyn_kwargs['sdf'] = {
-                    'name' : 'sphere',
-                }
-            elif dname == 'ProxCBO':
-                pp = MirrorMaptoPostProcessProx(ProjectionSphere)()
-                self.dyn_kwargs['post_process'] = pp
-            elif dname == 'DriftConstrainedCBO':
-                self.dyn_kwargs['constraints'] = [{
-                    'name' : 'sphere',
-                }]
-        else:
-            raise ValueError('Unknown constraint: ' +str(self.constr))
+#     def set_constr(self,):
+#         self.constr = self.config.problem.constr
+#         if self.constr == 'Sphere':
+#             dname = self.config.dyn.name
+#             if dname == 'MirrorCBO':
+#                 self.dyn_kwargs['mirrormap'] = {
+#                     'name':'ProjectionSphere',
+#                     }
+#             elif dname == 'SphereCBO':
+#                 self.dyn_kwargs['sdf'] = {
+#                     'name' : 'sphere',
+#                 }
+#             elif dname == 'ProxCBO':
+#                 pp = MirrorMaptoPostProcessProx(ProjectionSphere)()
+#                 self.dyn_kwargs['post_process'] = pp
+#
+#             elif dname == 'DriftConstrainedCBO':
+#                 self.dyn_kwargs['constraints'] = [{
+#                     'name' : 'sphere',
+#                 }]
+#             elif dname == 'RegCombinationCBO':
+#                 self.dyn_kwargs['constraints'] = [{
+#                     'name' : 'sphere',
+#                 }]
 
-    def get_objective(self,):
-        prb = self.config.problem
-        d, M, sigma_noise = (prb.d, prb.M, prb.sigma_noise)
+#         else:
+#             raise ValueError('Unknown constraint: ' +str(self.constr))
 
-        # get frame vectors
-        f = np.random.normal(0, 1, (M, d))
-        f = f/np.linalg.norm(f, axis=-1, keepdims=True)
-        self.f = f
-        self.x_true = np.random.normal(0, 1, (d,))
-        op = operator(f)
-        y = op(self.x_true) + sigma_noise * np.random.normal(0, 1, size=(M,))
-        self.y = y
-        return objective(y, f)
+#     def get_objective(self,):
+#         prb = self.config.problem
+#         d, M, sigma_noise = (prb.d, prb.M, prb.sigma_noise)
+
+#         # get frame vectors
+#         f = np.random.normal(0, 1, (M, d))
+#         f = f/np.linalg.norm(f, axis=-1, keepdims=True)
+#         self.f = f
+#         self.x_true = np.random.normal(0, 1, (d,))
+#         op = operator(f)
+#         y = op(self.x_true) + sigma_noise * np.random.normal(0, 1, size=(M,))
+#         self.y = y
+#         return objective(y, f)
     
-    def get_scheduler(self,):
-        return multiply(factor=1.05, maximum=1e18)
+#     def get_scheduler(self,):
+#         return multiply(factor=1.05, maximum=1e18)
     
-    def get_minimizer(self,):
-        return self.x_true
+#     def get_minimizer(self,):
+#         return self.x_true
     
-    def eval_run(self, dyn):
-        x_true = self.get_minimizer()
-        c = np.array(dyn.history['consensus'])
-        e = get_error_min(x_true, dyn.f.R * c[..., :-1]).mean(axis=-1).squeeze()
+#     def eval_run(self, dyn):
+#         x_true = self.get_minimizer()
+#         c = np.array(dyn.history['consensus'])
+#         e = get_error_min(x_true, dyn.f.R * c[..., :-1]).mean(axis=-1).squeeze()
         
-        success = e[-1] < self.config.success.tol
-        return {'consensus_diff': e, 'success': success}
+#         success = e[-1] < self.config.success.tol
+#         return {'consensus_diff': e, 'success': success}
 
 class Ackley_Experiment(ExperimentConfig):
     def __init__(self, conf_path):
@@ -102,6 +108,11 @@ class Ackley_Experiment(ExperimentConfig):
                 self.dyn_kwargs['constraints'] = [{
                     'name' : 'sphere',
                 }]
+            elif dname == 'RegCombinationCBO':
+                self.dyn_kwargs['constraints'] = [{
+                    'name' : 'sphere',
+                }]
+            
         else:
             raise ValueError('Unknown constraint: ' +str(self.constr))
     
