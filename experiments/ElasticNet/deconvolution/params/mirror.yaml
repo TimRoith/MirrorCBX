@@ -7,10 +7,10 @@ dyn:
     N: 1000
     sigma: 3.
     noise: 'anisotropic'
-    max_it: 1000
+    max_it: 5000
     verbosity: 0
     f_dim: '3D'
-    track_args: {'names':['x', 'y', 'consensus']}
+    track_args: {'names':['consensus']}
     #batch_args: {'size':170, 'partial':True}
 init:
     name: 'uniform'
@@ -26,13 +26,21 @@ scheduler:
     name: 'multiply'
     factor: 1.05
     maximum: 1e18
+lamda_scheduler:
+    min_max: [1e-5, 1.]
+    decr_incr: [.995, 1.005]
+    patience: 10
 reps: 10
 problem:
     d: 100
     obj: 'Deconvolution'
     num_signals: 3
-    noise_lvl: 0.01
+    noise_lvl: .05
+    kernel_var: 0.5
+    kernel_width: 10
+    downsampling: 2
 postprocess:
-    name: default
-    indep_sigma: 0.01
-    patience: 10
+    name: noise_lvl
+    indep_sigma: 0.5
+    patience: 50
+    reset_alpha: 1e18
