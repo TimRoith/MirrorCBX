@@ -74,7 +74,7 @@ class SphereCBO(CBO):
         Px = self.sdf.get_proj_matrix(self.x) # compute projection of x
         
         # compute relevant terms for update
-        #dir_drift = self.x + self.dt * apply_proj(Px, self.consensus)
+        # dir_drift = self.x + self.dt * apply_proj(Px, self.consensus)
         # noise     = self.sigma * apply_proj(Px, self.noise())
         
         # perform addition before matrix multiplaction to save time
