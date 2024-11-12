@@ -1,17 +1,17 @@
 dyn:
     name: 'PenalizedCBO'
-    dt: 0.01
+    dt: 0.05
     lamda: 1
-    alpha: 1e2
+    alpha: 1e5
     M: 1
-    N: 100
-    sigma: 2.
+    N: 1000
+    sigma: 3.
     noise: 'anisotropic'
-    max_it: 10000
+    max_it: 5000
     verbosity: 0
     f_dim: '3D'
-    track_args: {'names':['x', 'y', 'consensus', 'energy', 'alpha']}
-    term_criteria: [{'name': 'energy stagnation', 'patience':50}, {'name':'max_it', 'max_it':10000}]
+    track_args: {'names':['consensus', 'energy']}
+    term_criteria: [{'name':'max_it', 'max_it':5000}]
     seed: 98631290
 init:
     name: 'sparse-uniform'
@@ -20,25 +20,25 @@ init:
     p: 1.
 reg:
     name: L1
-    plamda: 0.5
+    plamda: 2.5
 scheduler:
     name: 'multiply'
     factor: 1.05
     maximum: 1e12
 lamda_scheduler:
-    min_max: [0.0, 1.]
-    decr_incr: [0.995, 1.005]
+    min_max: [0.0, 10.]
+    decr_incr: [.995, 1.005]
     patience: 10
 reg_sched:
     use: False
 reps: 1
 problem:
-    d: 30
+    d: 100
     obj: 'Deconvolution'
     num_signals: 3
     noise_lvl: .05
     kernel_var: 0.5
-    kernel_width: 5
+    kernel_width: 10
     downsampling: 2
 postprocess:
     name: noise_lvl

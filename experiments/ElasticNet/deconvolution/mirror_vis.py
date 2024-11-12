@@ -53,6 +53,9 @@ c = np.array(dyn.history['consensus'])
 ax[2].stem(conf.time_disc_x, c[idx, ...].squeeze(), linefmt='green', markerfmt='D')
 ax[3].stem(conf.time_disc_data, conf.y.squeeze(), linefmt='red')
 ax[3].plot(conf.time_disc_data, conf.y.squeeze(), color='red')
+yy = dyn.f.original_func.A(dyn.consensus).squeeze()
+ax[3].stem(conf.time_disc_data, yy, linefmt='y')
+ax[3].plot(conf.time_disc_data, yy, color='y')
 ax[3].stem(conf.time_disc_x, conf.x_true, linefmt='blue')
 
 #%%
