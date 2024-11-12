@@ -8,15 +8,22 @@ from mirrorcbx.dynamics import PolarMirrorCBO
 np.random.seed(4520)
 #%%
 class QuadricMirror:
-    def __init__(self, A, b, c):
-        param = {'A': A, 'b': b, 'c': c}
-        self.Q = quadrics.Quadric(param)
+    def __init__(self, A, b, c, off=100):
+        self.Q = quadrics.Quadric(A, b, c)
+        self.off = off
         
     def grad(self, x):
         return x
     
     def grad_conj(self, y):
-        return project(self.Q, y)
+        y = np.clip(y, a_min=-100, a_max=100)
+        x = project(self.Q, y)
+        idx_c = np.where(~self.Q.is_feasible(x))
+        if len(idx_c[0]) > 0:
+           x[idx_c] = 1#project(self.Q, x[idx_c] * self.off)
+        return x
+        
+        
 
 #%%
 f = Ackley(c=4*np.pi)
@@ -37,7 +44,7 @@ dyn = PolarMirrorCBO(
     dt=0.05,
     sigma=0.15,
     x=x,
-    track_args={'names':['x','y']},
+    track_args={'names':['x','y', 'energy']},
     max_it=400)
 
 dyn.compute_consensus()

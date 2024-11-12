@@ -1,0 +1,28 @@
+dyn:
+    name: 'CBO'
+    dt: 0.01
+    lamda: 1.
+    alpha: 10
+    M: 100
+    N: 150
+    sigma: 1.2
+    noise: 'isotropic'
+    max_it: 400
+    verbosity: 0
+    f_dim: '3D'
+    track_args: {'names':['x', 'consensus']}
+init:
+    name: 'normal'
+    mean: 0.
+    std: 1.
+reg:
+    dualize: True
+    plamda: 1
+scheduler:
+    name: 'multiply'
+    factor: 1.1
+    maximum: 1e13
+problem:
+    d: 2
+    obj: 'data_fid'
+reps: 1

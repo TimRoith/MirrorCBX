@@ -1,0 +1,29 @@
+name: 'driftconstrainedcboAckleyParaboloid'
+path: 'Paraboloid/results/'
+dyn:
+    name: 'DriftConstrainedCBO'
+    dt: 0.1
+    lamda: 1
+    alpha: 50.
+    M: 20
+    N: 100
+    sigma: 2.
+    noise: 'anisotropic'
+    max_it: 1000
+    verbosity: 0
+    f_dim: '3D'
+    track_args: {'names':['x', 'consensus']}
+    eps: 0.01
+    sigma_indep: 0.
+init:
+    name: 'normal'
+    mean: 0.
+    std: 1.
+scheduler:
+    name: 'multiply'
+    factor: 1.05
+    maximum: 1e18
+problem:
+    d: 20
+    obj: 'Ackley-B'
+    constr: 'Paraboloid'

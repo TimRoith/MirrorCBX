@@ -1,0 +1,28 @@
+dyn:
+    name: 'PolarMirrorCBO'
+    dt: 0.01
+    lamda: 1
+    alpha: 10
+    M: 100
+    N: 50
+    sigma: .1
+    noise: 'isotropic'
+    max_it: 400
+    verbosity: 0
+    f_dim: '3D'
+    track_args: {'names':['x', 'y', 'consensus']}
+    kappa: 100.1
+    kernel_factor_mode: 'alpha'
+init:
+    name: 'normal'
+    mean: 0.
+    std: 1.
+reg:
+    lamda: 1
+scheduler:
+    name: 'multiply'
+    factor: 1.05
+    maximum: 1e12
+problem:
+    d: 2
+    obj: 'data_fid'

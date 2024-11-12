@@ -1,0 +1,27 @@
+name: 'mirrorcboAckleyParaboloid'
+path: 'Paraboloid/results/'
+dyn:
+    name: 'MirrorCBO'
+    dt: 0.1
+    lamda: 1
+    alpha: 50.
+    M: 10
+    N: 100
+    sigma: 3.
+    noise: 'anisotropic'
+    max_it: 1000
+    verbosity: 0
+    f_dim: '3D'
+    track_args: {'names':['x', 'y', 'consensus']}
+init:
+    name: 'normal'
+    mean: 0.
+    std: 1.
+scheduler:
+    name: 'multiply'
+    factor: 1.05
+    maximum: 1e18
+problem:
+    d: 20
+    obj: 'Ackley-B'
+    constr: 'Paraboloid'

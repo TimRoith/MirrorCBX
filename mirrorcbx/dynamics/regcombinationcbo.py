@@ -19,6 +19,12 @@ class MultiConstraint:
             out += con.hessian_squared(x)
         return out
     
+    def _call_(self, x):
+        out = 0 
+        for c in self.constraints:
+            out += c(x)
+        return out
+    
     
 class Constraint:
     def grad_squared(self, x):
@@ -87,7 +93,7 @@ def get_constraints(const):
     return CS
 
 #%% regularized CBO ver 2 -- by Urbain et al.
-class reg_combination(CBO):
+class RegCombinationCBO(CBO):
     '''
     Implements the algorithm in [1]
     
@@ -101,28 +107,34 @@ class reg_combination(CBO):
         super().__init__(f, **kwargs)
         self.G = MultiConstraint(get_constraints(constraints))
         self.eps = eps
-        
+        # self.C = get_constraints(constraints)
     
     def inner_step(self, ):
-        # update, consensus point, drift and energy
-        self.consensus, energy = self.compute_consensus()
-        self.energy[self.consensus_idx] = energy
-        self.drift = self.x[self.particle_idx] - self.consensus
-
-        
-        # compute noise
-        self.s = self.sigma * self.noise()
+        self.compute_consensus()
+        self.drift = self.x - self.consensus
+        noise = self.sigma * self.noise()
 
         #  update particle positions
-        self.x[self.particle_idx] = (
-            self.x[self.particle_idx] -
+        self.x = (
+            self.x -
             self.correction(self.lamda * self.dt * self.drift) +
-            self.s)
-        
-        for i in range(self.M):
-            for j in range(self.N):
-                self.x[i, j, :] = np.linalg.solve ( np.eye(self.x.shape[-1]) + 4*(self.dt / self.epsilon) * self.G[i, j], 
-                                                   self.x[i, j, :] )
-        # self.error = np.linalg.norm(self.consensus - global_min, ord =2, axis = -1)/np.sqrt(self.x.shape[-1])
-        # self.error = np.linalg.norm(self.x - np.tile(global_min, (1, self.x.shape[1], 1)), ord =2, axis = -1)/np.sqrt(self.x.shape[-1])
-        self.error = np.linalg.norm(self.consensus - np.tile(global_min, (self.x.shape[0], 1, 1)), ord =2, axis = -1)/np.sqrt(self.x.shape[-1])
+            noise)
+
+        # for i in range(self.M):
+        #     for j in range(self.N):
+        #         self.x[i, j, :] = np.linalg.solve ( np.eye(self.x.shape[-1]) 
+        #                                            + 4*(self.dt / self.eps) * self.G._call_(self.x[i, j, :]), 
+        #                                            self.x[i, j, :] )
+
+        # following is the vectorized version of the above loop        
+        # Step 1: Compute the scalar G_call_values for each (i, j) as a (M, N) array
+        G_call_values = np.vectorize(self.G._call_, signature="(d)->()")(self.x)  # Shape (M, N)
+
+        # Step 2: Construct the matrix to solve for each (M, N) entry
+        scaling_factor = 4 * (self.dt / self.eps)
+        A_matrices = np.eye(self.x.shape[-1]) + scaling_factor * G_call_values[:, :, None, None] * np.eye(self.x.shape[-1])[None, None, :, :]  # Shape (M, N, d, d)
+
+        # Step 3: Solve the system A * X = X for each (M, N) entry in self.x
+        self.x = np.linalg.solve(A_matrices, self.x)
+
+
