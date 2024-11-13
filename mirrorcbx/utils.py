@@ -155,7 +155,7 @@ class ExperimentConfig:
             self.scc_eval = scc_eval
 
         np.savetxt(fname + '_scc.txt', np.array([self.scc_eval['rate'], self.tol]))
-        print('Success rate: ' + str(self.scc_eval['rate'] ))
+        print('Success rate: ' + str(self.scc_eval['rate'] ), flush=True)
 
     def set_diffs(self, x, c, const_minimizer):
         for z, n in [(x, 'diff'), (c, 'diff_c')]:
