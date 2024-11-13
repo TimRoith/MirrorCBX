@@ -9,6 +9,9 @@ from scipy.signal import fftconvolve
 #%%
 def select_experiment(conf_path):
     return Deconvolution_Experiment(conf_path)
+#%%
+def shrink(z, l):
+    return np.sign(z) * np.maximum(np.abs(z) - l, 0)
 
 #%%
 class noise_lvl_pp:
@@ -117,15 +120,21 @@ class convolution_operator:
         return y[..., np.arange(0,y.shape[-1], self.downsampling)]
     
     def adjoint(self, y):
-        if self.downsampling:
-            y_adj = np.zeros(shape=(y.shape[0], 2*y.shape[1]))
-            #y_adj[:, np.arange(1,2*y.shape[1],2)] = y.copy()
-            y_adj[:, np.arange(0,2*y.shape[1],2)] = y.copy()
+        k = self.k[(y.ndim-1)*(None,) + (Ellipsis,)]
+        if (k.shape[-1]%2) == 0: # even kernel length
+            k = np.concatenate([k[...,::-1], np.zeros(y.ndim * (1,))], axis=-1)
+        else:
+            k = k[...,::-1]
+        
+        if self.downsampling > 0:
+            y_adj = np.zeros(shape=y.shape[:-1] + (self.downsampling * y.shape[-1],))
+            y_adj[..., np.arange(0, self.downsampling * y.shape[-1], self.downsampling)] = y.copy()
         else:
             y_adj = y
         
-        x = np.real(ifft(self.j_fft * fft(y_adj, axis=1), axis=1))
-        return x
+        return fftconvolve(y_adj, k, mode='same', axes=(-1))
+    
+    T = adjoint
     
 
         
@@ -198,6 +207,13 @@ class Deconvolution_Experiment(ExperimentConfig):
                 ob, 
                 {'name':getattr(reg, 'name', 'L0')},
                 lamda=lamda,)
+            
+        if (reg is not None) and getattr(reg, 'dualize', False):
+            def dist_to_box(x, lamda):
+                z = np.clip(x, a_min=-1, a_max=1)
+                return 0.5*lamda*np.linalg.norm(x-z, axis=-1)**2
+            def ob(v):
+                return - (self.y * v).sum(axis=-1) + dist_to_box(self.A.T(v), lamda=lamda)
         return ob
     
     def get_scheduler(self,):
@@ -213,5 +229,20 @@ class Deconvolution_Experiment(ExperimentConfig):
     def evaluate_dynamic(self, dyn):
         super().evaluate_dynamic(dyn)
         if not hasattr(self, 'nnz_c'): self.nnz_c = 0
-        self.nnz_c += (~np.isclose(dyn.consensus, 0)).sum()
+        self.nnz_c += (~np.isclose(self.dual_to_primal(dyn.consensus), 0)).sum()
         print('NNZ: ' + str(self.nnz_c/self.num_runs), flush=True)
+        
+    def eval_success(self, c, const_minimizer):
+        c = self.dual_to_primal(c)
+        return super().eval_success(c, const_minimizer)
+        
+    def dual_to_primal(self, c):
+        reg = getattr(self.config, 'reg', None)
+        lamda = 0.1 if reg is None else getattr(reg, 'plamda', 0.0)
+        if (reg is not None) and getattr(reg, 'dualize', False):
+            c = lamda * shrink(self.A.T(c), 1)
+        return c
+    
+    def set_diffs(self, x, c, const_minimizer):
+        c = self.dual_to_primal(c)
+        super().set_diffs(x, c, const_minimizer)
