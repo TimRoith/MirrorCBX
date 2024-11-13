@@ -11,6 +11,7 @@ dyn:
     verbosity: 0
     f_dim: '3D'
     track_args: {'names':['consensus']}
+    #batch_args: {'size':170, 'partial':True}
 init:
     name: 'uniform'
     low: 0.
@@ -26,21 +27,20 @@ scheduler:
     factor: 1.05
     maximum: 1e18
 lamda_scheduler:
-    min_max: [1e-5, .01]
-    decr_incr: [1, 1.05]
+    min_max: [1e-5, 1.]
+    decr_incr: [.995, 1.005]
     patience: 10
-reps: 1
+reps: 10
 problem:
     d: 100
     obj: 'Deconvolution'
     num_signals: 3
     noise_lvl: .05
-    kernel_var: 2.5
+    kernel_var: 0.5
     kernel_width: 10
-    downsampling: 1
+    downsampling: 2
 postprocess:
     name: noise_lvl
-    indep_sigma: 1
+    indep_sigma: 0.5
     patience: 50
     reset_alpha: 1e18
-    decrease_sigma: 0.9

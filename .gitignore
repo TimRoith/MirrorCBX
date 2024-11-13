@@ -11,6 +11,12 @@ __pycache__/
 *.png
 *.npy
 
+# slurm
+*.err
+*.out
+output.txt
+*.sh
+
 # Distribution / packaging
 .Python
 build/
