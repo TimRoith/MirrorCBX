@@ -5,7 +5,7 @@ import numpy as np
 np.random.seed(35921724)
 #%%
 problem = ''
-params  = 'mirror_vis'
+params  = 'reg_vis'
 
 #%%
 CFG = getattr(
