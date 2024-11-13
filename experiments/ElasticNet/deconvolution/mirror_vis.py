@@ -5,7 +5,7 @@ import numpy as np
 np.random.seed(35921724)
 #%%
 problem = ''
-params  = 'CBO'
+params  = 'DualCBO'
 
 #%%
 CFG = getattr(
@@ -37,6 +37,7 @@ if hasattr(dyn.f, 'original_func'):
     e2 = dyn.f(np.array(dyn.history['consensus'])).mean(axis=-1).squeeze()
 else:
     e = np.array(dyn.history['energy']).mean(axis=-1).squeeze()
+    e = np.abs(e)
     e2 = e
     
 ec = np.convolve(e, np.ones(200), 'same') / 200
@@ -50,13 +51,11 @@ ax[2].stem(conf.time_disc_x, conf.x_true, linefmt='blue')
 idx = -1#np.argmax(e < conf.loss_thresh)
 
 c = np.array(dyn.history['consensus'])
-ax[2].stem(conf.time_disc_x, c[idx, ...].squeeze(), linefmt='green', markerfmt='D')
+ax[2].stem(conf.time_disc_x, conf.dual_to_primal(c)[idx, ...].squeeze(), linefmt='green', markerfmt='D')
 ax[3].stem(conf.time_disc_data, conf.y.squeeze(), linefmt='red')
 ax[3].plot(conf.time_disc_data, conf.y.squeeze(), color='red')
-if hasattr(dyn.f, 'original_func'):
-    yy = dyn.f.original_func.A(dyn.consensus).squeeze()
-else:
-    yy = dyn.f.A(dyn.consensus).squeeze()
+yy = conf.A(conf.dual_to_primal(dyn.consensus)).squeeze()
+
 ax[3].stem(conf.time_disc_data, yy, linefmt='y')
 ax[3].plot(conf.time_disc_data, yy, color='y')
 ax[3].stem(conf.time_disc_x, conf.x_true, linefmt='blue')
