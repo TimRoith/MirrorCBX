@@ -209,3 +209,9 @@ class Deconvolution_Experiment(ExperimentConfig):
     
     def get_minimizer(self,):
         return self.x_true[None, None, :]
+    
+    def evaluate_dynamic(self, dyn):
+        super().evaluate_dynamic(dyn)
+        if not hasattr(self, 'nnz_c'): self.nnz_c = 0
+        self.nnz_c += (~np.isclose(dyn.consensus, 0)).sum()
+        print('NNZ: ' + str(self.nnz_c/self.num_runs), flush=True)
