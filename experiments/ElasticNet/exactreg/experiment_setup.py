@@ -30,6 +30,7 @@ class Linear_Experiment(ExperimentConfig):
     def __init__(self, conf_path):
         super().__init__(conf_path)
         self.set_reg()
+        self.problem_d = self.d
         
     def set_reg(self,):
         dname = self.config.dyn.name
@@ -50,7 +51,7 @@ class Linear_Experiment(ExperimentConfig):
                                self.center[None,None,:], 
                                p = self.p)
         elif self.obj == 'data_fid':
-            self.A = np.ones((1,self.d))
+            self.A = np.ones((1, self.problem_d))
             self.A[0,0] = 2
             self.f = 1
             ob = data_fidelity(self.f, self.A)

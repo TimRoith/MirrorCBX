@@ -5,6 +5,10 @@ from cbx.objectives import Ackley
 import numpy as np
 
 #%%
+def select_experiment(conf_path):
+    return Ackley_Experiment(conf_path)
+
+#%%
 class Ackley_Experiment(ExperimentConfig):
     def __init__(self, conf_path):
         super().__init__(conf_path)

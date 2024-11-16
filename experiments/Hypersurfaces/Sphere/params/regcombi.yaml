@@ -2,26 +2,29 @@ name: 'regcombicboAckleySphere'
 path: 'Sphere/results/'
 dyn:
     name: 'RegCombinationCBO'
-    dt: 0.0005
+    dt: 0.01
     lamda: 1
-    alpha: 30.
+    alpha: 5.
     M: 100
-    N: 50
-    sigma: .7
+    N: 100
+    sigma: .5
     noise: 'isotropic'
     max_it: 400
     verbosity: 0
     f_dim: '3D'
-    track_args: {'names':['x', 'drift', 'consensus']}
+    track_args: {'names':['x', 'drift', 'consensus', 'energy']}
+    nu: .01
+    eps: 0.5
 init:
-    name: 'normal'
+    name: 'sphere'
     mean: 0.
     std: 1.
 scheduler:
     name: 'multiply'
     factor: 1.01
-    maximum: 1e12
+    maximum: 1e5
 problem:
     d: 3
     obj: 'Ackley-B'
     constr: 'Sphere'
+reps: 10

@@ -1,22 +1,21 @@
-name: 'proxcboAckleySphere'
-path: 'Sphere/results/'
 dyn:
     name: 'ProxCBO'
     dt: 0.1
     lamda: 1
     alpha: 5.
-    M: 1000
+    M: 100
     N: 100
-    sigma: 1.5
+    sigma: 2.
     noise: 'anisotropic'
     max_it: 400
     verbosity: 0
     f_dim: '3D'
-    track_args: {'names':['x', 'drift', 'consensus']}
+    track_args: {'names':['consensus','x']}
 init:
     name: 'sphere'
     mean: 0.
     std: 1.
+reps: 1
 scheduler:
     name: 'multiply'
     factor: 1.05

@@ -1,7 +1,5 @@
-name: 'driftconstrcboAckleyPlane'
-path: 'Hyperplane/results/'
 dyn:
-    name: 'DriftConstrainedCBO'
+    name: 'RegCombinationCBO'
     dt: 0.1
     lamda: 1
     alpha: 500.
@@ -12,7 +10,9 @@ dyn:
     max_it: 400
     verbosity: 0
     f_dim: '3D'
-    track_args: {'names':['x', 'drift', 'consensus']}
+    track_args: {'names':['x', 'drift', 'consensus', 'energy']}
+    nu: 1
+    eps: 0.1
 init:
     name: 'normal'
     mean: 0.
@@ -20,7 +20,7 @@ init:
 scheduler:
     name: 'multiply'
     factor: 1.01
-    maximum: 1e12
+    maximum: 1e3
 problem:
     d: 3
     obj: 'Ackley-A'
