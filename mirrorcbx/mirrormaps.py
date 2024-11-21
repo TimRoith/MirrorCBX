@@ -130,15 +130,17 @@ class NegativeLogEntropySimplex(MirrorMap):
     
     
 class L2(MirrorMap):
+    def __init__(self, lamda=1.0):
+        self.lamda = lamda
     
-    def __call__(theta):
-        return 0.5*np.sum(theta**2,axis=-1)
+    def __call__(self, theta):
+        return self.lamda * 0.5 * np.sum(theta**2,axis=-1)
     
     def grad(self, theta):
-        return theta
+        return self.lamda * theta
     
     def grad_conj(self, y):
-        return y
+        return (1/self.lamda) * y
     
     def hessian(self, theta):
         n,m = theta.shape

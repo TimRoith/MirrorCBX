@@ -10,12 +10,11 @@ dyn:
     max_it: 400
     verbosity: 0
     f_dim: '3D'
-    track_args: {'names':['x','y', 'consensus']}
+    track_args: {'names':['consensus']}
 init:
     name: 'sphere'
     mean: 0.
     std: 1.
-reps: 1
 scheduler:
     name: 'multiply'
     factor: 1.05
@@ -24,3 +23,4 @@ problem:
     d: 20
     obj: 'Ackley-B'
     constr: 'Sphere'
+reps: 10

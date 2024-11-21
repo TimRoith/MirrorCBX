@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 from pkgutil import importlib
 import numpy as np
 #%%
-problem = 'Hypersurfaces:Sphere'
-params  = 'regcombi'
+problem = 'Preconditioning'
+params  = 'mirror'
 
 #%%
 CFG = getattr(

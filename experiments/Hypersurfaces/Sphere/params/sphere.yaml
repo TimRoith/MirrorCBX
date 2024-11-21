@@ -5,7 +5,7 @@ dyn:
     dt: 0.1
     lamda: 1
     alpha: 5.
-    M: 1000
+    M: 100
     N: 100
     sigma: .3
     noise: 'isotropic'
@@ -25,3 +25,4 @@ problem:
     d: 20
     obj: 'Ackley-B'
     constr: 'Sphere'
+reps: 10

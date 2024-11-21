@@ -1,19 +1,17 @@
-name: 'driftconstrcboAckleySphere'
-path: 'Sphere/results/'
 dyn:
     name: 'DriftConstrainedCBO'
     dt: 0.1
     lamda: 1
-    alpha: 5.
-    M: 1000
+    alpha: 50.
+    M: 100
     N: 100
-    sigma: 1.5
+    sigma: 1.
     noise: 'anisotropic'
     max_it: 400
     verbosity: 0
     f_dim: '3D'
-    track_args: {'names':['x', 'drift', 'consensus']}
-    eps: 0.0001
+    track_args: {'names':['consensus']}
+    eps: 0.01
 init:
     name: 'sphere'
     mean: 0.
@@ -23,6 +21,7 @@ scheduler:
     factor: 1.05
     maximum: 1e12
 problem:
-    d: 3
+    d: 20
     obj: 'Ackley-B'
     constr: 'Sphere'
+reps: 10
