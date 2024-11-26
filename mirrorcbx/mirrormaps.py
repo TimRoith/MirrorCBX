@@ -118,18 +118,29 @@ class LogBarrierBox(MirrorMap):
         n,m = theta.shape
         return np.expand_dims(((1/(1-theta))**2 + (1/(1+theta))**2),axis=1)*np.eye(m)
     
+class NegativeLogEntropySimplex(MirrorMap):
+    
+    def grad(self, x):
+        x = np.maximum(x, 1e-32)
+        return np.log(x) + 1
+    
+    def grad_conj(self, y):
+        return np.exp(y)/(np.exp(y).sum(axis=-1, keepdims=True))
+    
     
     
 class L2(MirrorMap):
+    def __init__(self, lamda=1.0):
+        self.lamda = lamda
     
-    def __call__(theta):
-        return 0.5*np.sum(theta**2,axis=-1)
+    def __call__(self, theta):
+        return self.lamda * 0.5 * np.sum(theta**2,axis=-1)
     
     def grad(self, theta):
-        return theta
+        return self.lamda * theta
     
     def grad_conj(self, y):
-        return y
+        return (1/self.lamda) * y
     
     def hessian(self, theta):
         n,m = theta.shape
@@ -232,7 +243,8 @@ mirror_dict = {
     'LogBarrierBox': LogBarrierBox,
     'NonsmoothBarrier': NonsmoothBarrier,
     'weighted_L2': weighted_L2, 
-    'Entropy': Entropy
+    'Entropy': Entropy,
+    'EntropySimplex' : NegativeLogEntropySimplex
     }   
 
 

@@ -31,3 +31,11 @@ class data_fidelity:
     
     def grad(self, theta):
         return self.A.adjoint(self.A(theta) - self.f)
+    
+class data_fidelity_L1:
+    def __init__(self, f, A):
+        self.A = A if callable(A) else matrix_to_callable(A)
+        self.f = f
+        
+    def __call__(self, theta):
+        return np.linalg.norm(self.A(theta) - self.f, axis=-1, ord=1)

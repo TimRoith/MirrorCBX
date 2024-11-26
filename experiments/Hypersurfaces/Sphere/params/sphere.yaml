@@ -1,0 +1,28 @@
+name: 'spherecboAckleyPlane'
+path: 'Sphere/results/'
+dyn:
+    name: 'SphereCBO'
+    dt: 0.1
+    lamda: 1
+    alpha: 5.
+    M: 100
+    N: 100
+    sigma: .3
+    noise: 'isotropic'
+    max_it: 400
+    verbosity: 0
+    f_dim: '3D'
+    track_args: {'names':['x', 'drift', 'consensus']}
+init:
+    name: 'sphere'
+    mean: 0.
+    std: 1.
+scheduler:
+    name: 'multiply'
+    factor: 1.05
+    maximum: 1e12
+problem:
+    d: 20
+    obj: 'Ackley-B'
+    constr: 'Sphere'
+reps: 10

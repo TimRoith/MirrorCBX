@@ -6,6 +6,9 @@ from cbx.objectives import Ackley
 from cbx.scheduler import multiply
 import numpy as np
 
+def select_experiment(conf_path):
+    return Ackley_Experiment(conf_path)
+
 # #%%
 # class PhaseRetrieval_Experiment(ExperimentConfig):
 #     def __init__(self, conf_path):

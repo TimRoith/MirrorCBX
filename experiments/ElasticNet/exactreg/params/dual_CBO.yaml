@@ -21,8 +21,8 @@ reg:
 scheduler:
     name: 'multiply'
     factor: 1.1
-    maximum: 1e13
+    maximum: 1e10
 problem:
     d: 2
     obj: 'data_fid'
-reps: 1
+reps: 10

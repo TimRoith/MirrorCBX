@@ -1,5 +1,3 @@
-name: 'proxcboAckleyPlane'
-path: 'Hyperplane/results/'
 dyn:
     name: 'ProxCBO'
     dt: 0.1
@@ -12,7 +10,7 @@ dyn:
     max_it: 400
     verbosity: 0
     f_dim: '3D'
-    track_args: {'names':['x', 'drift', 'consensus']}
+    track_args: {'names':['consensus']}
 init:
     name: 'normal'
     mean: 0.
@@ -20,8 +18,9 @@ init:
 scheduler:
     name: 'multiply'
     factor: 1.05
-    maximum: 1e12
+    maximum: 1e10
 problem:
     d: 3
     obj: 'Ackley-A'
     constr: 'Hyperplane-A'
+reps: 10

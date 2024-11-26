@@ -1,0 +1,31 @@
+dyn:
+    name: 'CBO'
+    dt: 0.1
+    lamda: 1
+    alpha: 1e2
+    M: 1
+    N: 100
+    sigma: 3.5
+    noise: 'anisotropic'
+    max_it: 200
+    verbosity: 0
+    f_dim: '3D'
+    track_args: {'names':['consensus', 'energy']}
+init:
+    name: 'simplex'
+scheduler:
+    name: 'multiply'
+    factor: 1.05
+    maximum: 1e18
+reps: 100
+postprocess:
+    name: default
+    indep_sigma: .0
+    var_name: 'x'
+problem:
+    obj: None
+    d: 100
+    m: 200
+    noise_lvl: .5
+sweeps:
+    noise_lvl: [0, 0.1, 0.2, 0.3, 0.4, 0.5]

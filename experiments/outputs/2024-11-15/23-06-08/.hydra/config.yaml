@@ -1,0 +1,33 @@
+dyn:
+  name: MirrorCBO
+  dt: 5.0
+  lamda: 1
+  alpha: 100.0
+  M: 1
+  'N': 100
+  sigma: 4.0
+  noise: anisotropic
+  max_it: 200
+  verbosity: 0
+  f_dim: 3D
+  track_args:
+    names:
+    - consensus
+    - energy
+    - x
+    - 'y'
+init:
+  name: simplex
+scheduler:
+  name: multiply
+  factor: 1.05
+  maximum: 1.0e+18
+reps: 100
+postprocess:
+  name: default
+  indep_sigma: 0.0
+problem:
+  obj: None
+  d: 100
+  m: 200
+  noise_lvl: 0.5
