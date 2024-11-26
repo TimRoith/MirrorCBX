@@ -65,8 +65,8 @@ dyn = MirrorCBO(
     noise='anisotropic',
     sigma=2.,
     max_it=2500,
-    #mirrormap=mmA(np.diag(A)),
+    mirrormap=mmA(np.diag(A)),
     track_args={'names':['x', 'y']}
-    #post_process= post_process_cov
+    #post_process= post_proces_cov
 )
 dyn.optimize(sched=multiply(factor=1.05, maximum=1e18))

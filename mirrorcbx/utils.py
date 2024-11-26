@@ -195,6 +195,7 @@ class ExperimentConfig:
     def evaluate_dynamic(self, dyn):
         # update number of runs
         if not hasattr(self, 'num_runs'): self.num_runs = 0
+        self.M = dyn.M
         self.num_runs += dyn.M
 
         const_minimizer = self.get_minimizer()
@@ -222,12 +223,12 @@ class ExperimentConfig:
     def set_diffs(self, x, c, const_minimizer):
         for z, n in [(x, 'diff'), (c, 'diff_c')]:
             if z is not None:
-                dd = np.linalg.norm(z - const_minimizer, axis=-1).mean(axis=(-2,-1))
+                dd = np.linalg.norm(z - const_minimizer, axis=-1).sum(axis=(-2,-1))
                 if not hasattr(self, n): 
-                    setattr(self, n, dd)
+                    setattr(self, n, dd/self.num_runs)
                 else:
                     setattr(self, n, 
-                            (getattr(self, n) + (self.num_runs - 1) * dd)/
+                            ((self.num_runs - self.M) * getattr(self, n) + dd)/
                             self.num_runs
                             )
 
@@ -239,11 +240,11 @@ class ExperimentConfig:
         e = dyn.history.get('energy', None)
         if e is not None:
             e = np.array(e)
-            e = np.mean(e, axis=(-1,-2))
+            e = np.sum(e, axis=(-1,-2))
             if not hasattr(self, 'energy'):
-                self.energy = e
+                self.energy = e/self.num_runs
             else:
-                self.energy = (self.energy + (self.num_runs-1) * e)/self.num_runs
+                self.energy = ((self.num_runs - self.M) * self.energy + e)/self.num_runs
             
     def init_x(self,):
         dyn = self.config.dyn
@@ -303,7 +304,7 @@ class consensus_stagnation_pp:
         if len(idx[0]) > 0:
             z = np.random.normal(0, 1, size = (len(idx[0]), dyn.N) + dyn.d)
             var[idx[0], ...] += self.indep_sigma * (dyn.dt**0.5) * z
-            dyn.alpha[idx[0],...] = np.minimum(dyn.alpha[idx[0],...], 
+            dyn.alpha[idx[0],...] = np.minimum(dyn.alpha[idx[0],...],
                                                self.reset_alpha
                                                )
             self.indep_sigma *= self.decrease_sigma
