@@ -1,0 +1,24 @@
+dyn:
+    name: 'CBO'
+    dt: 0.1
+    lamda: 1
+    alpha: 50.0
+    M: 1
+    N: 100
+    sigma: .1
+    noise: 'anisotropic'
+    max_it: 5000
+    verbosity: 0
+    f_dim: '3D'
+    track_args: {'names':[]}
+    batch_args: {'batch_size': 10, 'batch_partial': False}
+    check_f_dims: False
+    epochs: 20
+scheduler:
+    name: 'multiply'
+    factor: 1.05
+    maximum: 1e18
+reps: 5
+problem:
+    obj: 'MNIST'
+    d: 10
