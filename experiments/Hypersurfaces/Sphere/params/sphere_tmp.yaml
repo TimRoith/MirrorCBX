@@ -3,15 +3,14 @@ dyn:
     dt: 0.1
     lamda: 1
     alpha: 5.
-    M: 100
+    M: 50
     N: 100
-    sigma: 1.5
-    noise: 'anisotropic'
+    sigma: .3
+    noise: 'isotropic'
     max_it: 400
     verbosity: 0
     f_dim: '3D'
-    track_args: {'names':['consensus', 'energy']}
-    # batch_args: {'size': 60, 'partial': False}
+    track_args: {'names':['consensus']}
 init:
     name: 'sphere'
     mean: 0.
@@ -24,4 +23,4 @@ problem:
     d: 20
     obj: 'Ackley-B'
     constr: 'Sphere'
-reps: 10
+reps: 1

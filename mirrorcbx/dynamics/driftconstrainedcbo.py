@@ -14,8 +14,11 @@ def dc_inner_step(self,):
     scaled_drift = self.lamda * self.dt * self.drift
     
     x_tilde = scaled_drift + const_drift + noise
-    A = np.eye(self.d[0]) + (self.dt/ self.eps) * self.G.hessian_squared_sum(self.x)
-    self.x -= solve_system(A, x_tilde)
+    # A = np.eye(self.d[0]) + (self.dt/ self.eps) * self.G.hessian_squared_sum(self.x)
+    # self.x -= solve_system(A, x_tilde)
+    self.x -= self.G.solve_Id_hessian_squared_sum(
+        self.x, x_tilde, factor=(self.dt/ self.eps)
+    )
 
 
 #%%

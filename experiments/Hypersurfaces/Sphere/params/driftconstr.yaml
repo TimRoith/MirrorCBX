@@ -1,17 +1,18 @@
 dyn:
     name: 'DriftConstrainedCBO'
-    dt: 0.1
+    dt: 0.125
     lamda: 1
-    alpha: 50.
-    M: 100
+    alpha: 5.
+    M: 5
     N: 100
-    sigma: 1.
+    sigma: 1.25
     noise: 'anisotropic'
     max_it: 400
     verbosity: 0
     f_dim: '3D'
-    track_args: {'names':['consensus']}
-    eps: 0.01
+    track_args: {'names':['consensus', 'energy']}
+    eps: 0.005
+    sigma_indep: 0.
 init:
     name: 'sphere'
     mean: 0.
@@ -19,9 +20,9 @@ init:
 scheduler:
     name: 'multiply'
     factor: 1.05
-    maximum: 1e12
+    maximum: 1e18
 problem:
     d: 20
     obj: 'Ackley-B'
     constr: 'Sphere'
-reps: 10
+reps: 1

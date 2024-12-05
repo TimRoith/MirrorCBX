@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 from pkgutil import importlib
 import numpy as np
 #%%
-problem = 'ElasticNet:exactreg'
-params  = 'mirror_paramsL0'
+problem = 'Hypersurfaces:Sphere'
+params  = 'driftconstr'
 
 #%%
 CFG = getattr(

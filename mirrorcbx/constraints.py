@@ -1,6 +1,9 @@
 import numpy as np
 
 #%%
+def solve_system(A, x):
+    return np.linalg.solve(A, x[..., None])[..., 0]
+#%%
 class MultiConstraint:
     def __init__(self, constraints):
         self.constraints = [] if constraints is None else constraints
@@ -41,6 +44,25 @@ class MultiConstraint:
             out += c(x)[..., None, None] * c.hessian(x)
         return out
     
+    def solve_Id_call_times_hessian(self, x, x_tilde, factor = 1.):
+        out = 0
+        for c in self.constraints:
+            out += c.solve_Id_call_times_hessian(x, x_tilde, factor=factor)
+        return out
+    
+    def solve_Id_hessian_squared_sum(self, x, x_tilde, factor=1.):
+        if len(self.constraints) > 1:
+            A = np.eye(x.shape[-1]) + factor * self.G.hessian_squared_sum(x)
+            return solve_system(A, x_tilde)
+        elif len(self.constraints) == 1:
+            return self.constraints[0].solve_Id_hessian_squared(
+                x,
+                x_tilde,
+                factor = factor
+            )
+        else:
+            return 0
+    
 class Constraint:
     def squared(self, x):
         return self(x)**2
@@ -52,6 +74,20 @@ class Constraint:
         grad = self.grad(x)
         outer = np.einsum('...i,...j->...ij', grad, grad)
         return 2 * (outer + self(x)[..., None, None] * self.hessian(x))
+    
+    def call_times_hessian(self, x):
+        return self(x)[..., None, None] * self.hessian(x)
+    
+    def solve_Id_call_times_hessian(self, x, x_tilde, factor=1.):
+        A = (
+            np.eye(x.shape[-1]) + 
+            factor * self.call_times_hessian(x)
+        )
+        return solve_system(A, x_tilde)
+    
+    def solve_Id_hessian_squared(self, x, x_tilde, factor=1.):
+        A = np.eye(x.shape[-1]) + factor * self.hessian_squared(x)
+        return solve_system(A, x_tilde)
     
 class NoConstraint(Constraint):
     def __init__(self,):
@@ -95,10 +131,11 @@ class sphereConstraint(Constraint):
         return np.linalg.norm(x, axis=-1)**2 - self.r
     
     def grad(self, x):
-        return 2 * x
+        return 2 * self.r * x
     
     def hessian(self, x):
-        return 2 * np.tile(np.eye(x.shape[-1]), x.shape[:-1] + (1,1))
+        return 2 * self.r * np.tile(np.eye(x.shape[-1]), x.shape[:-1] + (1,1))
+    
     
 
 class planeConstraint(Constraint):
@@ -116,6 +153,9 @@ class planeConstraint(Constraint):
     
     def hessian(self, x):
         return np.zeros(x.shape + (x.shape[-1],))
+    
+    def solve_Id_call_times_hessian(self, x, x_tilde, factor=1.):
+        return x_tilde
     
     
 const_dict = {'plane': planeConstraint, 

@@ -2,9 +2,6 @@ from cbx.dynamics import CBO
 import numpy as np
 from mirrorcbx.constraints import get_constraints, MultiConstraint
 from mirrorcbx.regularization import regularize_objective
-#%%
-def solve_system(A, x):
-    return np.linalg.solve(A, x[..., None])[..., 0]
 
 #%% regularized CBO ver 2 -- by Urbain et al.
 class RegCombinationCBO(CBO):
@@ -33,13 +30,16 @@ class RegCombinationCBO(CBO):
         #  update particle positions
         if self.eps < float('inf'):
             x_tilde = self.x - self.lamda * self.dt * self.drift + noise
-            A = (
-                np.eye(self.d[0]) + 
-                2 * (self.dt/ self.eps) * self.G.call_times_hessian(self.x)
+            # A = (
+            #     np.eye(self.d[0]) + 
+            #     2 * (self.dt/ self.eps) * self.G.call_times_hessian(self.x)
+            # )
+            self.x = self.G.solve_Id_call_times_hessian(
+                self.x,
+                x_tilde,
+                factor = 2 * (self.dt/ self.eps)
             )
-    
-            # Step 3: Solve the system A * X = X for each (M, N) entry in self.x
-            self.x = solve_system(A, x_tilde)
+            #self.x = solve_system(A, x_tilde)
         else:
             self.x = self.x_tilde
 

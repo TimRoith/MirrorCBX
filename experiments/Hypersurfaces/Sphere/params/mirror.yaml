@@ -5,7 +5,7 @@ dyn:
     alpha: 5.
     M: 100
     N: 100
-    sigma: 1.
+    sigma: 1.25
     noise: 'anisotropic'
     max_it: 400
     verbosity: 0

@@ -16,7 +16,7 @@ class sphereDistance(signedDistance):
     
     def Laplacian(self, v):
         d = v.shape[-1]
-        return (d-1) * np.linalg.norm(v, axis=-1, keepdims=True)
+        return (d-1)/np.linalg.norm(v, axis=-1, keepdims=True)
     
     def proj(self, x):
         return x/np.linalg.norm(x, axis=-1, keepdims=True)
@@ -45,8 +45,10 @@ def get_sdf(sdf):
     else:
         return sdf_dict[sdf['name']](**{k:v for k,v in sdf.items() if k not in ['name']})
 
-def apply_proj(P, z):
-    return np.einsum('...ij,...j->...i',P, z)
+# def apply_proj(P, z):
+#     return np.einsum('...ij,...j->...i',P, z)
+def apply_proj(g, z):
+    return z - g * (g*z).sum(axis=-1, keepdims=True)
 
 def compute_consensus_rescale(energy, x, alpha):
     emin = np.min(energy, axis=-1, keepdims=True)
@@ -60,18 +62,24 @@ def compute_consensus_rescale(energy, x, alpha):
     
     
 class SphereCBO(CBO):
-    def __init__(self, f, sdf = None, **kwargs):
+    def __init__(self, f, noise = 'isotropic', sdf = None, **kwargs):
         super().__init__(
             f, 
-            compute_consensus = compute_consensus_rescale, 
+            compute_consensus = compute_consensus_rescale,
+            noise = noise,
             **kwargs
         )
         self.sdf = get_sdf(sdf)
+        if noise == 'anisotropic':
+            self.noise_constr = self.noise_constr_aniso
+        else:
+            self.noise_constr = self.noise_constr_iso
+        
+        
         
     def inner_step(self,):
         self.compute_consensus() # compute consensus, sets self.energy and self.consensus
         self.drift = self.x - self.consensus
-        Px = self.sdf.get_proj_matrix(self.x) # compute projection of x
         
         # compute relevant terms for update
         # dir_drift = self.x + self.dt * apply_proj(Px, self.consensus)
@@ -80,30 +88,27 @@ class SphereCBO(CBO):
         # perform addition before matrix multiplaction to save time
         drift_and_noise = (
             self.x + 
-            apply_proj(Px, 
+            apply_proj(self.sdf.grad(self.x), 
             self.dt * self.consensus + self.sigma * self.noise())
         )
         
-        # note that in the implementation here:
-        # https://github.com/PhilippeSu/KV-CBO/blob/master/v2/kvcbo/KuramotoIteration.m
-        # norm(drift)**2 is used instead of drift**2
-        constr  = (
+        x_tilde = drift_and_noise - self.noise_constr()
+        self.x = self.sdf.proj(x_tilde)
+        
+    def noise_constr_iso(self,):
+        return (
             self.dt * self.sigma**2/2 * self.sdf.Laplacian(self.x) *
             np.linalg.norm(self.drift, axis=-1, keepdims=True)**2 * 
+            # note that in the implementation here:
+            # https://github.com/PhilippeSu/KV-CBO/blob/master/v2/kvcbo/KuramotoIteration.m
+            # norm(drift)**2 is used instead of drift**2
             #self.drift**2 *
             self.sdf.grad(self.x)
         )
-        
-        x_tilde = drift_and_noise - constr
-        self.x = self.sdf.proj(x_tilde)
-        
-#     class sigma_sched:
-#         def __init__(self, eta=2., tau=1.2):
-#             self.eta = eta
-#             self.tau = tau
-            
-#         def update(self, dyn):
-#             if np.std(dyn.x, axis=-2).sum() < self.eta:
-#                 dyn.sigma /= self.tau
-            
-#     sched=multiply(factor=1.01, maximum=1e18)
+    
+    def noise_constr_aniso(self,):
+        return (self.dt * self.sigma**2)/2 * (
+            np.linalg.norm(self.drift, axis=-1, keepdims=True) ** 2 +
+            self.drift ** 2 -
+            2 * np.linalg.norm(self.drift * self.x, axis=-1, keepdims=True)**2
+            ) * self.x
