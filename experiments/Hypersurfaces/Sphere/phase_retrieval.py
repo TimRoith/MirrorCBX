@@ -46,10 +46,10 @@ class objective:
         self.A = lower_frame_bound(f)
         self.R = ((1/self.A) * np.sum(self.y))**0.5
         
-def get_error_min(x_true, x):
+def get_error_min(x_true, x, p=2):
     return np.min(
         np.array([
-            np.linalg.norm(x_true - a*x, axis=-1, ord=float('inf')) 
+            np.linalg.norm(x_true - a*x, axis=-1, ord=p) 
             for a in [-1, 1]
             ]), 
         axis=0
@@ -75,39 +75,58 @@ def energy(f, y, z):
     return (((f@z)**2 - y)**2).sum()
 
 
-def WirtingerFlowBackTracking(f, y, z0=None, max_it=100, mu0=10.,
-                              verbosity=0,
-                              energy_tol=1e-8):
-    z = spectral_init(f,y) if z0 is None else z0.copy()
-    nz0 = np.linalg.norm(z)**2
-    M = f.shape[0]
-    mu0 = mu0
-    
-    for i in range(max_it):
-        g = ((f@z)**2 - y)[:, None] * ((f[:,None,:] * f[...,None])@z)
-        g = g.mean(axis=0)
+class WirtingerFlowBackTracking:
+    def __init__(
+            self, erg,
+            f = None,
+            y = None, 
+            z0 = None,
+            max_it = 100, mu0 = 10.,
+            verbosity=0,
+            energy_tol=1e-8,
+            M = 1,
+            **kwargs
+        ):
         
-        energy_old = energy(f, y, z)
+        self.f = f
+        self.y = y
+        self.M = M
+        self.consensus = spectral_init(f, y) if z0 is None else z0.copy()
+        self.nz0 = np.linalg.norm(self.consensus)**2
+        self.mu0 = mu0
+        self.max_it = max_it
+        self.verbosity = verbosity
+        self.energy_tol = energy_tol
         
-        mu = mu0
-        for bc in range(50):
-            tmp = energy_old + 0.1 * mu * np.linalg.norm(g)**2
+    def optimize(self, sched=None):
+        self.history = {}
+        for i in range(self.max_it):
+            g = (
+                ((self.f @ self.consensus)**2 - self.y)[:, None] * 
+                ((self.f[:,None,:] * self.f[...,None])@self.consensus)
+                )
+            g = g.mean(axis=0)
             
-            z_new = z - mu * g
-            energy_new = energy(f, y, z_new)
+            energy_old = energy(self.f, self.y, self.consensus)
             
-            if energy_new <= tmp:
+            mu = self.mu0
+            for bc in range(50):
+                tmp = energy_old + 0.1 * mu * np.linalg.norm(g)**2
+                
+                z_new = self.consensus - mu * g
+                energy_new = energy(self.f, self.y, z_new)
+                
+                if energy_new <= tmp:
+                    break
+                mu = self.mu0 * 0.2
+            
+            self.consensus = z_new.copy()
+            
+            if self.verbosity > 0:
+                print(energy_new)
+            if energy_new < self.energy_tol:
                 break
-            mu = mu0 * 0.2
-        
-        z = z_new.copy()
-        
-        if verbosity > 0:
-            print(energy_new)
-        if energy_new < energy_tol:
-            break
-        
-    return z
+        return self.consensus
 
 
 def spectral_init(f, y):

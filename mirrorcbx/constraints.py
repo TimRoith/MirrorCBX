@@ -38,7 +38,7 @@ class MultiConstraint:
             out += con.hessian(x)
         return out
     
-    def call_times_hessian(self, x):
+    def call_times_hessian_sum(self, x):
         out = 0 
         for c in self.constraints:
             out += c(x)[..., None, None] * c.hessian(x)
@@ -46,8 +46,13 @@ class MultiConstraint:
     
     def solve_Id_call_times_hessian(self, x, x_tilde, factor = 1.):
         out = 0
-        for c in self.constraints:
-            out += c.solve_Id_call_times_hessian(x, x_tilde, factor=factor)
+        if len(self.constraints) > 1:
+            A = np.eye(x.shape[-1]) + factor * self.call_times_hessian_sum(x)
+            return solve_system(A, x_tilde)
+        elif len(self.constraints) == 1:
+            return self.constraints[0].solve_Id_call_times_hessian(x, x_tilde, factor=factor)
+        else:
+            return 0
         return out
     
     def solve_Id_hessian_squared_sum(self, x, x_tilde, factor=1.):
@@ -131,10 +136,13 @@ class sphereConstraint(Constraint):
         return np.linalg.norm(x, axis=-1)**2 - self.r
     
     def grad(self, x):
-        return 2 * self.r * x
+        return 2 * x
     
     def hessian(self, x):
-        return 2 * self.r * np.tile(np.eye(x.shape[-1]), x.shape[:-1] + (1,1))
+        return 2 * np.tile(np.eye(x.shape[-1]), x.shape[:-1] + (1,1))
+    
+    def solve_Id_call_times_hessian(self, x, x_tilde, factor=1.):
+        return (1/(1 + 4 * factor * (np.linalg.norm(x, axis=-1, keepdims=True)**2 -1))) * x_tilde
     
     
 
