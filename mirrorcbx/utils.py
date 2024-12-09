@@ -11,9 +11,20 @@ from collections import OrderedDict
 from functools import reduce
 from cbx.scheduler import multiply, scheduler, effective_sample_size
 import cbx.utils.success as scc
+import functools
+from warnings import warn
+
+#%% nested class assignement see here: 
+# https://stackoverflow.com/questions/31174295/getattr-and-setattr-on-nested-subobjects-chained-properties
+def rsetattr(obj, attr, val):
+    pre, _, post = attr.rpartition('.')
+    return setattr(rgetattr(obj, pre) if pre else obj, post, val)
+
+def rgetattr(obj, attr, *args):
+    def _getattr(obj, attr):
+        return getattr(obj, attr, *args)
+    return functools.reduce(_getattr, [obj] + attr.split('.'))
 #%%
-
-
 param_group_dict = {
     'dyn': [
         'dt',
@@ -157,12 +168,24 @@ class ExperimentConfig:
         if not hasattr(self, 'sweep_ctr'): self.sweep_ctr = -1
         self.sweep_ctr += 1
         if self.sweeps is not None:
+            for del_var in ['diff', 'diff_c', 'scc_eval']:
+                self.__dict__.pop(del_var, None)
+            self.num_runs = 0
+            
             self.name_ext = str(self.sweep_ctr)
             print(20 * '<>')
             print('Starting sweep')
             for i, n in enumerate(self.sweep_list[1]):
                 val = self.sweep_list[0][i][self.sweep_ctr]
-                setattr(self, n, val)
+                try:
+                    rsetattr(self, n, val)
+                except:
+                    warn('I was not able to set ' + str(n) + ' for self!')
+                try:
+                    rsetattr(self.config, n, val)
+                except:
+                    warn('I was not able to set ' + str(n) + ' for self.config!' )
+                    
                 print('Setting ' + n + ' to ' + str(val))
             print(20 * '<>')
         

@@ -1,5 +1,3 @@
-name: 'spherecboAckleyPlane'
-path: 'Sphere/results/'
 dyn:
     name: 'SphereCBO'
     dt: 0.1
@@ -7,12 +5,13 @@ dyn:
     alpha: 5.
     M: 100
     N: 100
-    sigma: .3
-    noise: 'isotropic'
+    sigma: 1.5
+    noise: 'anisotropic'
     max_it: 400
     verbosity: 0
     f_dim: '3D'
-    track_args: {'names':['x', 'drift', 'consensus']}
+    track_args: {'names':['consensus', 'energy']}
+    # batch_args: {'size': 60, 'partial': False}
 init:
     name: 'sphere'
     mean: 0.

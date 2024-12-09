@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 from pkgutil import importlib
 import numpy as np
 #%%
-problem = 'ElasticNet:nn'
-params  = 'CBO'
+problem = 'Hypersurfaces:Sphere'
+params  = 'mirror_phase_no_noise'
 
 #%%
 CFG = getattr(

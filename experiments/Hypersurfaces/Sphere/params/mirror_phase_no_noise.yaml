@@ -1,5 +1,3 @@
-name: 'mirrorcboPhase1000'
-path: 'Sphere/results/'
 dyn:
     name: 'MirrorCBO'
     dt: 0.1
@@ -21,6 +19,7 @@ scheduler:
     factor: 1.05
     maximum: 1e5
 problem:
+    name: phase
     d: 100
     M: 1000
     constr: 'Sphere'
@@ -29,3 +28,7 @@ problem:
 success:
     tol: 0.05
     ord: float('inf')
+reps: 5
+sweeps:
+    problem:
+        M: [500, 1000, 1500]

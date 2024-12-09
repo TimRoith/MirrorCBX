@@ -5,13 +5,13 @@ dyn:
     alpha: 500.
     M: 100
     N: 50
-    sigma: .5
+    sigma: 1.
     noise: 'isotropic'
     max_it: 400
     verbosity: 0
     f_dim: '3D'
-    track_args: {'names':['x', 'drift', 'consensus', 'energy']}
-    nu: 1
+    track_args: {'names':['consensus']}
+    nu: .01
     eps: 0.1
 init:
     name: 'normal'
@@ -19,9 +19,10 @@ init:
     std: 1.
 scheduler:
     name: 'multiply'
-    factor: 1.01
-    maximum: 1e3
+    factor: 1.05
+    maximum: 1e10
 problem:
     d: 3
     obj: 'Ackley-A'
     constr: 'Hyperplane-A'
+reps: 10
