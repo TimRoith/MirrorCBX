@@ -11,7 +11,6 @@ import cbx.utils.success as scc
 #%%
 from experiment_setup import Ackley_Experiment
 conf = Ackley_Experiment('params/mirror_params_vis.yaml')
-save_conf_to_table(conf.config)
 #%%
 f = conf.get_objective()
 const_minimizer = conf.get_minimizer()
@@ -28,7 +27,6 @@ np.savetxt(fname + '_diff.txt', diff)
 
 tol = 0.1
 scc_eval = scc.dist_to_min_success(dyn.consensus, const_minimizer, tol=tol)
-np.savetxt(fname + '_scc.txt', np.array([scc_eval['rate'], tol]))
 print('Success rate: ' + str(scc_eval['rate'] ))
 
 #%% plot rate
@@ -82,9 +80,8 @@ for axx in [ax, ay]:
     axx.view_init(30, 35, 0)
     axx.set_zlim(0,1.)
     axx.set_aspect('equal')
-    
+    axx.minorticks_off()
+
+#%%
 plt.tight_layout(pad=0., w_pad=0., h_pad=0.)
 plt.savefig('results/mirrorcbo_sphere_vis.pdf')
-
-
-

@@ -41,7 +41,7 @@ class QuadricDistance:
         
     def __call__(self, x):
          return np.abs(
-             (x * (x@self.A)) .sum(axis=-1) + 
+             (x * (x@self.A.T)).sum(axis=-1) + 
              (x * self.b).sum(axis=-1) + 
              self.c
         )

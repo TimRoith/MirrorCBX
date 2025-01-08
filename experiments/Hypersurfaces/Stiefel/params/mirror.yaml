@@ -1,0 +1,28 @@
+dyn:
+    name: 'MirrorCBO'
+    dt: 0.2
+    lamda: 1
+    alpha: 5.
+    M: 100
+    N: 100
+    sigma: 1.5
+    noise: 'anisotropic'
+    max_it: 400
+    verbosity: 0
+    f_dim: '3D'
+    track_args: {'names':['consensus', 'energy']}
+scheduler:
+    name: 'multiply'
+    factor: 1.05
+    maximum: 1e12
+resampling:
+    patience: 5
+    update_thresh: 0.00001
+    sigma_indep: .1
+    var_name: 'y'
+problem:
+    d: 5
+    k: 10
+    obj: 'Ackley-B'
+    constr: 'Sphere'
+reps: 10

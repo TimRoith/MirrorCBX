@@ -6,9 +6,13 @@ from cbx.scheduler import multiply
 import numpy as np
 from quadproj import quadrics
 from quadproj.project import project
+from .quasi_proj import quasi_proj
+import cbx.utils.resampling as rsmp
+#%%
+def select_experiment(cfg):
+    return Ackley_Experiment(cfg)
 
 #%%
-
 class QuadricMirror:
     def __init__(self, A, b, c):
         self.Q = quadrics.Quadric(A, b, c)
@@ -18,11 +22,12 @@ class QuadricMirror:
     
     def grad_conj(self, y):
         y = np.clip(y, a_min=-100, a_max=100)
-        x = project(self.Q, y)
-        idx_c = np.where(~self.Q.is_feasible(x))
-        if len(idx_c[0]) > 0:
-           x[idx_c] = 1#project(self.Q, x[idx_c] * self.off)
-        return x
+        x = quasi_proj(y, self.Q)
+        # idx_c = np.where(~self.Q.is_feasible(x))
+        # if len(idx_c[0]) > 0:
+        #    x[idx_c] = 1#project(self.Q, x[idx_c] * self.off)
+        return x    
+    
     
 
 #%%
@@ -45,12 +50,13 @@ class Ackley_Experiment(ExperimentConfig):
             QM = QuadricMirror(self.A, self.b, self.c)
             self.dyn_kwargs['mirrormap'] = QM
         elif dname == 'ProxCBO':
-            pp = MirrorMaptoPostProcessProx(QM)(self.A, self.b, self.c)
+            pp = MirrorMaptoPostProcessProx(QuadricMirror)(self.A, self.b, self.c)
             self.dyn_kwargs['post_process'] = pp
         elif dname == 'DriftConstrainedCBO':
             self.dyn_kwargs['constraints'] = [{
                 'name' : 'quadric', 'A': self.A, 'b': self.b, 'c': self.c,
             }]
+            
 
     def get_objective(self,):
         if self.obj == 'Ackley-C':
@@ -72,7 +78,37 @@ class Ackley_Experiment(ExperimentConfig):
                 f, 
                 {'name':'Quadric', 'A': self.A, 'b': self.b, 'c': self.c},
                 lamda=lamda)
+            
+        self.set_resampling()
         return f
+    
+    def set_resampling(self,):
+        if self.config.dyn.name in ['DriftConstrainedCBO', 'RegCombinationCBO', 
+                                    'MirrorCBO', 'ProxCBO', 'PenalizedCBO']:
+            ckwargs = {'patience': 20, 'update_thresh':0.01}
+            rkwargs = {'sigma_indep':0.3, 'var_name':'x', 
+                       'track_best_consensus':False}
+            if hasattr(self.config, 'resampling'):
+                cr = self.config.resampling
+                for kwargs in [ckwargs, rkwargs]:
+                    for k in kwargs.keys():
+                        if hasattr(cr, k):
+                            kwargs[k] = getattr(cr, k)
+            
+            self.resampling =  rsmp.resampling(
+                [rsmp.consensus_stagnation(**ckwargs,)],
+                **rkwargs,
+                )
+            
+            if self.config.dyn.name == 'ProxCBO':
+                prox = MirrorMaptoPostProcessProx(QuadricMirror)(self.A, self.b, self.c)
+                def pp_comb(dyn):
+                    prox(dyn)
+                    self.resampling(dyn)
+                    
+                self.dyn_kwargs['post_process'] = pp_comb
+            else:
+                self.dyn_kwargs['post_process'] = lambda dyn: self.resampling(dyn)
     
     
     def get_minimizer(self,):

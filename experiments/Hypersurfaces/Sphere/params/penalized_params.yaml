@@ -1,5 +1,3 @@
-name: 'penalizedcboAckleySphere'
-path: 'Sphere/results/'
 dyn:
     name: 'PenalizedCBO'
     dt: 0.05
@@ -7,12 +5,12 @@ dyn:
     alpha: 5.
     M: 100
     N: 100
-    sigma: .5
-    noise: 'isotropic'
+    sigma: 2.
+    noise: 'anisotropic'
     max_it: 400
     verbosity: 0
     f_dim: '3D'
-    track_args: {'names':['x', 'drift', 'consensus']}
+    track_args: {'names':['consensus']}
 init:
     name: 'sphere'
     mean: 0.
@@ -22,9 +20,13 @@ scheduler:
     factor: 1.05
     maximum: 1e12
 problem:
-    d: 3
+    d: 20
     obj: 'Ackley-B'
     constr: 'Sphere'
 reg:
-    lamda: 0.1
+    lamda: 2
+reg_sched:
+    factor_theta: 1.01
+    factor_lamda: 1.001
+    lamda_max: 100
 reps: 10

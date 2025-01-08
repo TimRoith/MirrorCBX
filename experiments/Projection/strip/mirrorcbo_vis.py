@@ -1,4 +1,4 @@
-from mirrorcbx import MirrorCBO
+from mirrorcbx.dynamics import MirrorCBO
 from exp_setup import ball_strip_experiment
 from mirrorcbx.plotting import PlotMirrorDynamicHistory
 import numpy as np
@@ -8,7 +8,7 @@ import scienceplots
 plt.style.use(['science'])
 plt.rcParams['text.usetex'] = False
 #%%
-E = ball_strip_experiment(r_min=2, r_max=6, size=(20, 50, 2), x_min=1)
+E = ball_strip_experiment(r_min=2, r_max=6, size=(20, 50, 2), x_min=-np.inf)
 
 dyn = MirrorCBO(
     E.get_objective(),
@@ -80,7 +80,6 @@ if vis_dyn:
                             num_run = E.bad_idx)
     p.phx.ax.add_patch(Circle((0,0), 1, fill=False, color='r'))
     p.phy.ax.add_patch(Circle((0,0), 1, fill=False, color='r'))
-    p.run_plots(wait=0.75, freq=1)
-
-
+    p.run_plots(wait=.5, freq=1)
+    plt.show()
 

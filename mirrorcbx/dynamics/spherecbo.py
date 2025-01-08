@@ -10,6 +10,11 @@ class signedDistance:
         outer = grad[..., None,:]*grad[..., None]
         return np.eye(v.shape[-1]) - outer
     
+    def proj_tangent_space(self, x, z):
+        g = self.grad(x)
+        return z - g * (g*z).sum(axis=-1, keepdims=True)
+    
+    
 class sphereDistance(signedDistance):
     def grad(self, v):
         return v/np.linalg.norm(v,axis=-1, keepdims=True)
@@ -20,6 +25,26 @@ class sphereDistance(signedDistance):
     
     def proj(self, x):
         return x/np.linalg.norm(x, axis=-1, keepdims=True)
+    
+class StiefelDistance(signedDistance):
+    def __init__(self, nk= None):
+        self.nk = nk
+        
+    def grad(self, v):
+        return v
+    
+    def Laplacian(self, v):
+        return (2*self.nk[0] - self.nk[1] - 1)/2
+    
+    def proj(self, x):
+        U, _, Vh = np.linalg.svd(x.reshape(-1, self.nk[0], self.nk[1]), full_matrices=False)
+        return (U@Vh).reshape(x.shape)
+    
+    def proj_tangent_space(self, x, z):
+        X, Z = (y.reshape(-1, self.nk[0], self.nk[1]) for y in (x,z))
+        X = x.reshape(-1, self.nk[0], self.nk[1])
+        
+        return (Z - 0.5 * X@(np.moveaxis(Z, -1,-2)@X + np.moveaxis(X, -1,-2)@Z)).reshape(x.shape)
     
 class planeDistance(signedDistance):
     def __init__(self, a=0, b=1.):
@@ -37,7 +62,10 @@ class planeDistance(signedDistance):
         return y - ((self.a * y).sum(axis=-1, keepdims=True) - self.b)/(self.norm_a**2) * self.a
 
         
-sdf_dict = {'sphere': sphereDistance, 'plane': planeDistance}    
+sdf_dict = {'sphere': sphereDistance, 
+            'plane': planeDistance,
+            'Stiefel': StiefelDistance
+            }    
 
 def get_sdf(sdf):
     if sdf is None:
@@ -45,10 +73,6 @@ def get_sdf(sdf):
     else:
         return sdf_dict[sdf['name']](**{k:v for k,v in sdf.items() if k not in ['name']})
 
-# def apply_proj(P, z):
-#     return np.einsum('...ij,...j->...i',P, z)
-def apply_proj(g, z):
-    return z - g * (g*z).sum(axis=-1, keepdims=True)
 
 def compute_consensus_rescale(energy, x, alpha):
     emin = np.min(energy, axis=-1, keepdims=True)
@@ -88,8 +112,10 @@ class SphereCBO(CBO):
         # perform addition before matrix multiplaction to save time
         drift_and_noise = (
             self.x + 
-            apply_proj(self.sdf.grad(self.x), 
-            self.dt * self.consensus + self.sigma * self.noise())
+            self.sdf.proj_tangent_space(
+                self.x, 
+                self.dt * self.consensus + 
+                self.sigma * self.noise())
         )
         
         x_tilde = drift_and_noise - self.noise_constr()

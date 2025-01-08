@@ -101,6 +101,16 @@ class ProjectionSquare(ProjectionMirrorMap):
         
         y[np.arange(y.shape[0]), idx] = np.sign(y[np.arange(y.shape[0]), idx])
         return y.reshape(s)
+    
+class ProjectionStiefel(ProjectionMirrorMap):
+    def __init__(self, nk=None):
+        self.nk = (1,1) if nk is None else nk
+    
+    def grad_conj(self, y):
+        yshape = y.shape
+        y = y.reshape((-1,) + self.nk)
+        U, _, Vh = np.linalg.svd(y, full_matrices=False)
+        return (U@Vh).reshape(yshape)
 
 
 class LogBarrierBox(MirrorMap):

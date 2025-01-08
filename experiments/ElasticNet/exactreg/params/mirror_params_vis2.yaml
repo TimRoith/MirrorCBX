@@ -27,3 +27,6 @@ scheduler:
 problem:
     d: 2
     obj: 'data_fid'
+mirrormap:
+   name: ElasticNet
+   lamda: 1

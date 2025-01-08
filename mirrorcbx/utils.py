@@ -263,7 +263,7 @@ class ExperimentConfig:
         e = dyn.history.get('energy', None)
         if e is not None:
             e = np.array(e)
-            e = np.sum(e, axis=(-1,-2))
+            e = np.mean(e, axis=(-1,-2))
             if not hasattr(self, 'energy'):
                 self.energy = e/self.num_runs
             else:

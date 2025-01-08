@@ -21,9 +21,7 @@ class QuadricMirror:
         idx_c = np.where(~self.Q.is_feasible(x))
         if len(idx_c[0]) > 0:
            x[idx_c] = 1#project(self.Q, x[idx_c] * self.off)
-        return x
-        
-        
+        return x 
 
 #%%
 f = Ackley(c=4*np.pi)
