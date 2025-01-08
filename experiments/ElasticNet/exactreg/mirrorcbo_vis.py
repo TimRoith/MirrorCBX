@@ -10,7 +10,7 @@ plt.rcParams['text.usetex'] = False
 np.random.seed(2536309824)
 #%%
 problem = ''
-params  = 'mirror_paramsL0'
+params  = 'mirror_params_vis2'
 
 #%%
 CFG = getattr(
@@ -47,22 +47,23 @@ for k, z in enumerate([x, y]):
     contour_2D(f, ax=ax[k], num_pts=40, cmap=plt.cm.terrain, 
                             antialiased=False, levels=80, 
                             x_max=4, x_min=-2,alpha=0.7)
-    ax[k].plot(np.linspace(-3, 3), conf.f - conf.A[0,0]*np.linspace(-3, 3), color='b')
+    ax[k].plot(np.linspace(-3, 3), conf.f - conf.A[0,0]*np.linspace(-3, 3), color='b', 
+               linewidth=2.5)
     num_pcs = 10
     colors = iter(plt.cm.Reds(np.linspace(0.5,1.,num_pcs)))
     for j in range(num_pcs):
         c = next(colors)
-        ax[k].plot(*[z[:, idx, j, i] for i in [0,1]], color=c, linewidth=2., rasterized=False)
+        ax[k].plot(*[z[:, idx, j, i] for i in [0,1]], color=c, linewidth=3., rasterized=False)
         ax[k].scatter(*[z[-1, idx, j, i] for i in [0,1]], color='w', 
-                      rasterized=False, zorder=10)
-        ax[k].scatter(*[z[0, idx, j, i] for i in [0,1]], color=c, rasterized=False)
+                      rasterized=False, zorder=10, s=70)
+        ax[k].scatter(*[z[0, idx, j, i] for i in [0,1]], color=c, rasterized=False, s=100)
     
     ax[k].axis('square')
     ax[k].set_xlim([-1.5,3.5])
     ax[k].set_ylim([-2,2.])
     
 for k, n in enumerate(['Primal Space', 'Dual Space']): ax[k].set_title(n)
-plt.tight_layout(pad=0.)
+plt.tight_layout(pad=0.2)
 plt.savefig('results/norm_sphere_mirror.pdf',)
     
 

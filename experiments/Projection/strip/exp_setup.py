@@ -20,7 +20,7 @@ def init_ball_strip(r_min=2., r_max = 3, x_min = 1., size=(1,1,1)):
 class ball_strip_experiment:
     def __init__(self, p=1., r_min=2., r_max=3., size = (100,50,2), x_min = 1):
         self.minimum = 0#np.array([self.center[0]- self.radius,0.])
-        self.x_init = init_ball_strip(size=size, r_min=r_min, r_max=r_max)
+        self.x_init = init_ball_strip(size=size, r_min=r_min, r_max=r_max, x_min=x_min)
         self.p = p
     
     def get_objective(self,):

@@ -21,7 +21,7 @@ scheduler:
     maximum: 1e18
 reg:
     dualize: True
-    plamda: 1
+    plamda: 20
 reps: 100
 problem:
     d: 100

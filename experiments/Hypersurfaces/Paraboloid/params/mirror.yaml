@@ -1,0 +1,31 @@
+dyn:
+    name: 'MirrorCBO'
+    dt: 0.2
+    lamda: 1
+    alpha: 5000.
+    M: 100
+    N: 100
+    sigma: 2.
+    noise: 'anisotropic'
+    max_it: 400
+    verbosity: 0
+    f_dim: '3D'
+    track_args: {'names':['x', 'consensus',]}
+init:
+    name: 'uniform'
+    low: -1.
+    high: 1.
+scheduler:
+    name: 'multiply'
+    factor: 1.05
+    maximum: 1e18
+resampling:
+    patience: 5
+    update_thresh: 0.00001
+    sigma_indep: .1
+    var_name: 'y'
+problem:
+    d: 20
+    obj: 'Ackley-B'
+    constr: 'Paraboloid'
+reps: 10

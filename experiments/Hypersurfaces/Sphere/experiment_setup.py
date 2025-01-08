@@ -2,7 +2,7 @@ from mirrorcbx.utils import ExperimentConfig
 from mirrorcbx.mirrormaps import ProjectionSphere, MirrorMaptoPostProcessProx
 from mirrorcbx.regularization import regularize_objective
 import cbx.utils.resampling as rsmp
-from .phase_retrieval import operator, objective, get_error_min, WirtingerFlowBackTracking
+from phase_retrieval import operator, objective, get_error_min, WirtingerFlowBackTracking
 from cbx.objectives import Ackley
 from cbx.scheduler import multiply
 import numpy as np

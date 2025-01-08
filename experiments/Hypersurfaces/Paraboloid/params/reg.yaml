@@ -1,0 +1,36 @@
+dyn:
+    name: 'PenalizedCBO'
+    dt: 0.1
+    lamda: 1
+    alpha: 5.
+    M: 100
+    N: 100
+    sigma: 2.
+    noise: 'anisotropic'
+    max_it: 400
+    verbosity: 0
+    f_dim: '3D'
+    track_args: {'names':['consensus', 'energy']}
+init:
+    name: 'uniform'
+    low: -1.
+    high: 1.
+reg:
+    lamda: 0.003
+reg_sched:
+    factor_theta: 1.1
+    factor_lamda: 1.1
+    lamda_max: 10
+scheduler:
+    name: 'multiply'
+    factor: 1.05
+    maximum: 1e18
+resampling:
+    patience: 5
+    update_thresh: 1e-5
+    sigma_indep: .01
+problem:
+    d: 20
+    obj: 'Ackley-B'
+    constr: 'Paraboloid'
+reps: 10
