@@ -28,7 +28,7 @@ problem:
 success:
     tol: 0.05
     ord: float('inf')
-reps: 5
+reps: 50
 sweeps:
     problem:
         M: [500, 1000, 1500]
