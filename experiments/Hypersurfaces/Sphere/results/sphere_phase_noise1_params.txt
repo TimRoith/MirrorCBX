@@ -1,0 +1,2 @@
+dt & alpha & lamda & noise & sigma & M & N & d & max_it & batch_args & init & problem\\
+0.1 & 10.0 & 1 & isotropic & 0.2 & 1 & 100 & None & 10000 & None & {'name': 'sphere', 'mean': 0.0, 'std': 1.0} & {'name': 'phase', 'd': 32, 'M': 128, 'constr': 'Sphere', 'obj': '', 'sigma_noise': 0.05}\\
