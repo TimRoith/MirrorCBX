@@ -11,14 +11,14 @@ dyn:
     verbosity: 0
     f_dim: '3D'
     track_args: {'names':[]}
-    batch_args: {'batch_size': 10, 'batch_partial': False}
+    batch_args: {'size': 70, 'partial': False}
     check_f_dims: False
-    epochs: 20
+    epochs: 40
 scheduler:
     name: 'multiply'
     factor: 1.05
     maximum: 1e18
-reps: 5
+reps: 10
 problem:
     obj: 'MNIST'
     d: 10

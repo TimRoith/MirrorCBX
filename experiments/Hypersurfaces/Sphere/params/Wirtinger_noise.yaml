@@ -11,15 +11,15 @@ scheduler:
     maximum: 1e5
 problem:
     name: phase
-    d: 100
-    M: 1000
+    d: 32
+    M: 128
     constr: 'Sphere'
     obj: ''
     sigma_noise: 0.0
 success:
     tol: 0.05
     ord: float('inf')
-reps: 5
+reps: 50
 sweeps:
     problem:
-        M: [500, 1000, 1500]
+        sigma_noise: [0.0, 0.05, 0.1, 0.2]

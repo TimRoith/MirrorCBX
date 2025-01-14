@@ -1,0 +1,2 @@
+dt & alpha & lamda & noise & sigma & M & N & d & max_it & batch_args & scheduler & init & problem\\
+None & None & None & None & None & 1 & 1 & None & None & None & {'factor': 1.05, 'maximum': 100000.0} & {'name': 'sphere', 'mean': 0.0, 'std': 1.0} & {'name': 'phase', 'd': 32, 'M': 128, 'constr': 'Sphere', 'obj': '', 'sigma_noise': 0.0}\\

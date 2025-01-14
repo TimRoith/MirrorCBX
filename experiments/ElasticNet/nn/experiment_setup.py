@@ -6,7 +6,6 @@ import torch.nn as nn
 import torchvision
 import cbx.utils.resampling as rsmp
 from mirrorcbx.utils import ExperimentConfig, dyn_dict
-from models import Perceptron
 from cbx.utils.torch_utils import (
     flatten_parameters, get_param_properties, eval_losses, norm_torch, compute_consensus_torch, 
     standard_normal_torch, eval_acc, effective_sample_size,
@@ -15,7 +14,7 @@ from cbx.utils.torch_utils import (
 import numpy as np
 
 def select_experiment(cfg):
-    return MNIST_Experiment
+    return MNIST_Experiment(cfg)
 
 class objective:
     def __init__(self, train_loader, N, device, model, pprop, lamda=0.1, test_loader=None):
@@ -48,6 +47,33 @@ class objective:
             self.epoch += 1
         self.x = x.to(self.device)
         self.y = y.to(self.device)
+
+class Perceptron(nn.Module):
+    def __init__(self, mean = 0.0, std = 1.0, 
+                 act_fun=nn.ReLU,
+                 sizes = None):
+        super(Perceptron, self).__init__()
+        #
+        self.mean = mean
+        self.std = std
+        self.act_fun = act_fun()
+        self.sizes = sizes if sizes else [784, 10]
+        self.linears = nn.ModuleList([nn.Linear(self.sizes[i], self.sizes[i+1]) for i in range(len(self.sizes)-1)])
+        self.bns = nn.ModuleList([nn.BatchNorm1d(self.sizes[i+1], track_running_stats=False) for i in range(len(self.sizes)-1)])
+        self.sm = nn.Softmax(dim=1)
+
+    def __call__(self, x):
+        x = x.view([x.shape[0], -1])
+        x = (x - self.mean)/self.std
+        
+        for linear, bn in zip(self.linears, self.bns):
+            x = linear(x)
+            x = self.act_fun(x)
+            x = bn(x)
+
+        # apply softmax
+        x = self.sm(x)
+        return x
 
 def lCBO_optimize(self, sched=None):
     self.epoch = 0
@@ -99,11 +125,10 @@ class ElasticNetTorch:
 
 
 class MNIST_Experiment(ExperimentConfig):
-    def __init__(self, conf_path):
+    def __init__(self, conf_path, data_path = "../../datasets/"):
         super().__init__(conf_path)
         self.reg_lamda = 0
         # path and data
-        data_path = "../../../../datasets/" # This path directs to one level above the CBX package
         transform = torchvision.transforms.ToTensor()
         train_data = torchvision.datasets.MNIST(data_path, train=True, transform=transform, download=False)
         test_data = torchvision.datasets.MNIST(data_path, train=False, transform=transform, download=False)
@@ -140,12 +165,13 @@ class MNIST_Experiment(ExperimentConfig):
         return self.w
 
     def set_resampling(self,):
+        ckwargs = {'update_thresh':np.inf, 'patience':1}
         if self.config.dyn.name in ['MirrorCBO']:
-            resampling =  rsmp.resampling([rsmp.consensus_stagnation(patience=1)], var_name='y')
+            self.resampling =  rsmp.resampling([rsmp.consensus_stagnation(**ckwargs)], var_name='y',)
         else:
-            resampling =  rsmp.resampling([rsmp.consensus_stagnation(patience=1)], var_name='x')
+            self.resampling =  rsmp.resampling([rsmp.consensus_stagnation(**ckwargs)], var_name='x',)
 
-        self.dyn_kwargs['post_process'] = lambda dyn: resampling(dyn)
+        self.dyn_kwargs['post_process'] = lambda dyn: self.resampling(dyn)
         
     def set_dyn_kwargs(self,):
         cdyn = self.config['dyn']
@@ -169,8 +195,8 @@ class MNIST_Experiment(ExperimentConfig):
         if not hasattr(self, 'num_runs'): self.num_runs = 0
         self.num_runs += dyn.M
 
-        acc = eval_acc(dyn.f.model, dyn.best_particle[0, ...], dyn.f.pprop, self.test_loader)
-        sparsity = ((dyn.best_particle[0,...]==0).sum()/dyn.d[0])
+        acc = eval_acc(dyn.f.model, dyn.best_particle[0, ...], dyn.f.pprop, self.test_loader).cpu().detach().numpy()
+        sparsity = ((dyn.best_particle[0,...]==0).sum()/dyn.d[0]).cpu().detach().numpy()
 
         # set attributes
         for n, z in [('acc', acc), ('sparsity', sparsity)]: 
@@ -178,10 +204,12 @@ class MNIST_Experiment(ExperimentConfig):
                 setattr(self, n, z)
             else:
                 zz = (self.num_runs - dyn.M) * getattr(self, n)
+                setattr(self, n, (zz + z)/self.num_runs)
+                
         
         fname = self.path + 'results/' + self.name()
         np.savetxt(fname + '_acc_sp.txt', np.array([self.acc, self.sparsity]))
         print('Sparsity: ' + str(self.sparsity), flush=True)
-        print('Accuracy: ' + str(self.accuracy), flush=True)
+        print('Accuracy: ' + str(self.acc), flush=True)
 
         
