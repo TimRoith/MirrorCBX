@@ -67,15 +67,16 @@ def select_reg_func(func):
     
 #%%
 class regularize_objective:
-    def __init__(self, f, reg_func, lamda = 1., lamda_broadcasted = False):
+    def __init__(self, f, reg_func, lamda = 1., lamda_broadcasted = False, p = 1):
         self.original_func = f
         self.reg_func = select_reg_func(reg_func)
         self.lamda = lamda
         self.lamda_broadcasted = lamda_broadcasted
+        self.p = p
         
     def __call__(self, x):
         self.broadcast_lamda(x)
-        return self.original_func(x) + self.lamda * self.reg_func(x)
+        return self.original_func(x) + self.lamda * self.reg_func(x) ** self.p
     
     def broadcast_lamda(self, x):
         if not self.lamda_broadcasted:

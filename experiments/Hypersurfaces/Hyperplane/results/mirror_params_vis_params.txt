@@ -1,0 +1,2 @@
+dt & alpha & lamda & noise & sigma & M & N & d & max_it & batch_args & init & problem\\
+0.05 & 500.0 & 1 & isotropic & 0.25 & 100 & 50 & None & 400 & None & {'name': 'normal', 'mean': 0.0, 'std': 1.0} & {'d': 3, 'obj': 'Ackley-A', 'constr': 'Hyperplane-A'}\\

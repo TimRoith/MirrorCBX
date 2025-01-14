@@ -2,7 +2,7 @@ from mirrorcbx.utils import ExperimentConfig
 from mirrorcbx.mirrormaps import ProjectionSphere, MirrorMaptoPostProcessProx
 from mirrorcbx.regularization import regularize_objective
 import cbx.utils.resampling as rsmp
-from phase_retrieval import operator, objective, get_error_min, WirtingerFlowBackTracking
+from .phase_retrieval import operator, objective, objective_unconstr, get_error_min, WirtingerFlowBackTracking
 from cbx.objectives import Ackley
 from cbx.scheduler import multiply
 import numpy as np
@@ -26,30 +26,19 @@ class PhaseRetrieval_Experiment(ExperimentConfig):
         
     def set_problem_kwargs(self,):
         self.obj = self.config.problem.obj
-        self.d   = self.config.problem.d + 1
+        self.d   = self.config.problem.d + (not self.CBO)
         self.tol = getattr(self.config.problem, 'tol', 0.1)
         
     def set_dyn_kwargs(self,):
+        self.Wirtinger, self.CBO = False, False
         cdyn = self.config['dyn']
         if cdyn.name == 'Wirtinger':
             self.dyn_cls = WirtingerFlowBackTracking
             self.dyn_kwargs = {k:v for k,v in cdyn.items() if k not in ['name']}
             self.Wirtinger = True
         else:
-            self.Wirtinger = False
+            self.CBO = (cdyn.name == 'CBO')
             super().set_dyn_kwargs()
-         
-    # def eval_Wirtinger_Flow(self,):
-    #     #%% compute Wirtinger Flow
-    #     x = WirtingerFlow(
-    #         self.f, self.y, 
-    #         max_it=10000, 
-    #         tau_0 = 10, mu_max=1.
-    #     )
-    #     e = get_error_min(self.get_minimizer(), x)
-    #     success = e < self.config.success.tol
-    #     return {'success': success}
-        
         
     def set_constr(self,):
         self.constr = self.config.problem.constr
@@ -77,7 +66,7 @@ class PhaseRetrieval_Experiment(ExperimentConfig):
                 }]
 
         else:
-            raise ValueError('Unknown constraint: ' +str(self.constr))
+            raise ValueError('Unknown constraint: ' + str(self.constr))
 
     def get_objective(self,):
         prb = self.config.problem
@@ -94,9 +83,12 @@ class PhaseRetrieval_Experiment(ExperimentConfig):
         if self.config.dyn.name == 'Wirtinger':
             self.dyn_kwargs['y'] = y
             self.dyn_kwargs['f'] = f
-        
-        ob = objective(y, f)
-        self.R = ob.R
+            ob = None
+        elif self.config.dyn.name == 'CBO':
+            ob = objective_unconstr(y, f)
+        else:
+            ob = objective(y, f)
+            self.R = ob.R
         return ob
     
     def get_scheduler(self,):
@@ -108,7 +100,7 @@ class PhaseRetrieval_Experiment(ExperimentConfig):
     def set_diffs(self, x, c, x_true):
         for z, n in [(x, 'diff'), (c, 'diff_c')]:
             if z is not None:
-                if not self.Wirtinger:
+                if not (self.Wirtinger or self.CBO):
                     dd = get_error_min(x_true, self.R * z[..., :-1]).mean(axis=-1).squeeze()
                 else:
                     dd = get_error_min(x_true, z).mean(axis=-1).squeeze()
@@ -121,7 +113,7 @@ class PhaseRetrieval_Experiment(ExperimentConfig):
                             self.num_runs
                             )
     def eval_success(self, c, x_true):
-        if not self.Wirtinger:
+        if not (self.Wirtinger or self.CBO):
             diff = get_error_min(x_true, self.R * c[..., :-1], p=np.inf)
             M = c.shape[0]
         else:
@@ -135,14 +127,6 @@ class PhaseRetrieval_Experiment(ExperimentConfig):
                 'rate': len(idx)/M, 
                 'normdiff': diff,
                 'idx':idx}
-        
-    # def eval_run(self, dyn):
-    #     x_true = self.get_minimizer()
-    #     c = np.array(dyn.history['consensus'])
-        
-        
-    #     success = e[-1] < self.config.success.tol
-    #     return {'consensus_diff': e, 'success': success}
 
 class Ackley_Experiment(ExperimentConfig):
     def __init__(self, conf_path):
@@ -196,7 +180,8 @@ class Ackley_Experiment(ExperimentConfig):
             f = regularize_objective(
                 f, 
                 {'name':'Sphere',},
-                lamda=lamda)
+                lamda=lamda, 
+                p = 2)
         return f
     
     def set_resampling(self,):

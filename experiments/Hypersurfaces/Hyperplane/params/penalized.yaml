@@ -29,4 +29,4 @@ reg:
     lamda: 0.1
 reg_sched:
     lamda_max: 1e15
-reps: 1
+reps: 10

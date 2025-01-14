@@ -56,7 +56,7 @@ class Ackley_Experiment(ExperimentConfig):
     def get_objective(self,):        
         if self.obj == 'Ackley-A':
             v = 0.4 * np.ones((1,1, self.d))
-            f = Ackley(minimum=v, c=np.pi*4, b=0.1)
+            f = Ackley(minimum=v, c=np.pi*2, b=0.1)
         else:
             raise ValueError('Unknown objective ' + str(self.obj))
             
@@ -67,7 +67,7 @@ class Ackley_Experiment(ExperimentConfig):
             f = regularize_objective(
                 f, 
                 {'name':'Plane', 'a': self.a, 'b': self.b},
-                lamda=lamda)
+                lamda=lamda, p=2)
         return f
     
     def get_minimizer(self,):
