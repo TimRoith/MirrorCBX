@@ -24,9 +24,9 @@ problem:
     obj: 'Ackley-B'
     constr: 'Sphere'
 reg:
-    lamda: 2
+    lamda: 3.1 # 2
 reg_sched:
     factor_theta: 1.01
-    factor_lamda: 1.001
-    lamda_max: 100
+    factor_lamda: 1.01
+    lamda_max: 1e15 #100
 reps: 10

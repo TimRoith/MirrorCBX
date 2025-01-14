@@ -12,16 +12,16 @@ dyn:
     f_dim: '3D'
     track_args: {'names':['consensus', 'energy']}
 init:
-    name: 'uniform'
-    low: 0.
-    high: 1
+    name: 'normal'
+    mean: 0.
+    std: 1
 scheduler:
     name: 'multiply'
-    factor: 1.05
+    factor: 1.01
     maximum: 1e18
 reg:
     dualize: True
-    plamda: 20
+    plamda: 35
 reps: 100
 problem:
     d: 100
@@ -33,7 +33,7 @@ problem:
     downsampling: 1
 postprocess:
     name: noise_lvl
-    indep_sigma: 0.5
+    indep_sigma: 0.1
     patience: 50
     reset_alpha: 1e18
     var_name: 'x'

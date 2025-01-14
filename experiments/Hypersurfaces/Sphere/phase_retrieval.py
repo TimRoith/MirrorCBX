@@ -45,7 +45,17 @@ class objective:
     def setR(self, f):
         self.A = lower_frame_bound(f)
         self.R = ((1/self.A) * np.sum(self.y))**0.5
-        
+
+class objective_unconstr:
+    def __init__(self, y, f):
+        self.y = y
+        self.operator = operator(f)
+    
+    def __call__(self, x):
+        Fx = self.operator(x)
+        return np.linalg.norm(Fx - self.y, axis=-1)**2
+
+
 def get_error_min(x_true, x, p=2):
     return np.min(
         np.array([
