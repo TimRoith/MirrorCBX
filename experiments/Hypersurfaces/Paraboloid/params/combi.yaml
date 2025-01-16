@@ -2,31 +2,31 @@ dyn:
     name: 'RegCombinationCBO'
     dt: 0.1
     lamda: 1
-    alpha: 5.
+    alpha: 5000.
     M: 100
     N: 100
-    sigma: 1.
+    sigma: 1.5
     noise: 'anisotropic'
     max_it: 400
     verbosity: 0
     f_dim: '3D'
     track_args: {'names':['consensus', 'energy']}
-    nu: 300.
-    eps: .9
+    eps: 1.5
+    nu: 0.75
 init:
     name: 'uniform'
-    low: -3
-    high: 3.
+    low: -1.
+    high: 1.
 scheduler:
     name: 'multiply'
-    factor: 1.05
+    factor: 1.01
     maximum: 1e18
 resampling:
-    patience: 1
-    update_thresh: 0.01
-    sigma_indep: 0.5
+    patience: 5
+    update_thresh: 0.000001
+    sigma_indep: .0000001
 problem:
     d: 20
     obj: 'Ackley-B'
-    constr: 'Sphere'
+    constr: 'Paraboloid'
 reps: 10

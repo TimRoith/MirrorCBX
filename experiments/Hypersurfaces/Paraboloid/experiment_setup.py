@@ -56,6 +56,10 @@ class Ackley_Experiment(ExperimentConfig):
             self.dyn_kwargs['constraints'] = [{
                 'name' : 'quadric', 'A': self.A, 'b': self.b, 'c': self.c,
             }]
+        elif dname == 'RegCombinationCBO':
+                self.dyn_kwargs['constraints'] = [{
+                    'name' : 'quadric', 'A': self.A, 'b': self.b, 'c': self.c,
+                }]
             
 
     def get_objective(self,):
@@ -77,7 +81,8 @@ class Ackley_Experiment(ExperimentConfig):
             f = regularize_objective(
                 f, 
                 {'name':'Quadric', 'A': self.A, 'b': self.b, 'c': self.c},
-                lamda=lamda)
+                lamda=lamda,
+                p=1)
             
         self.set_resampling()
         return f
