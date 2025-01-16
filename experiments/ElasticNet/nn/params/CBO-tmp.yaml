@@ -13,7 +13,7 @@ dyn:
     track_args: {'names':[]}
     batch_args: {'size': 70, 'partial': False}
     check_f_dims: False
-    epochs: 100
+    epochs: 40
 scheduler:
     name: 'multiply'
     factor: 1.05
