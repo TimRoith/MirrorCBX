@@ -2,13 +2,13 @@ dyn:
     name: 'MirrorCBO'
     dt: 0.1
     lamda: 1
-    alpha: 1e0
+    alpha: 0.001
     M: 1
     N: 100
-    sigma: .15
+    sigma: .11
     noise: 'isotropic'
     max_it: 10000
-    verbosity: 0
+    verbosity: 1
     f_dim: '3D'
     track_args: {'names':['consensus']}
 init:
@@ -16,12 +16,13 @@ init:
     mean: 0.
     std: 1.
 scheduler:
+    name: multiply
     factor: 1.05
-    maximum: 1e5
+    maximum: 1e15
 problem:
     name: phase
     d: 100
-    M: 1000
+    M: 500
     constr: 'Sphere'
     obj: ''
     sigma_noise: 0.0

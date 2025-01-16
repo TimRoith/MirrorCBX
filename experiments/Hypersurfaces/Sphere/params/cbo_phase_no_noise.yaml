@@ -2,13 +2,13 @@ dyn:
     name: 'CBO'
     dt: 0.1
     lamda: 1
-    alpha: 1e0
+    alpha: 2e15
     M: 1
     N: 100
-    sigma: .15
+    sigma: .11
     noise: 'isotropic'
     max_it: 10000
-    verbosity: 0
+    verbosity: 1
     f_dim: '3D'
     track_args: {'names':['consensus']}
 init:
@@ -16,6 +16,7 @@ init:
     mean: 0.
     std: 1.
 scheduler:
+    name: multiply
     factor: 1.05
     maximum: 1e5
 problem:
@@ -28,7 +29,7 @@ problem:
 success:
     tol: 0.05
     ord: float('inf')
-reps: 5
+reps: 50
 sweeps:
     problem:
-        M: [1500]
+        M: [500, 1000, 1500]

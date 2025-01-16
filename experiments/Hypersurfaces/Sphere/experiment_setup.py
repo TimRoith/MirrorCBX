@@ -2,7 +2,10 @@ from mirrorcbx.utils import ExperimentConfig
 from mirrorcbx.mirrormaps import ProjectionSphere, MirrorMaptoPostProcessProx
 from mirrorcbx.regularization import regularize_objective
 import cbx.utils.resampling as rsmp
-from .phase_retrieval import operator, objective, objective_unconstr, get_error_min, WirtingerFlowBackTracking
+try:
+    from .phase_retrieval import operator, objective, objective_unconstr, get_error_min, WirtingerFlowBackTracking
+except: # cheap trick for runfile and notebook usage. Could be improved but works
+    from phase_retrieval import operator, objective, objective_unconstr, get_error_min, WirtingerFlowBackTracking
 from cbx.objectives import Ackley
 from cbx.scheduler import multiply
 import numpy as np
@@ -27,7 +30,7 @@ class PhaseRetrieval_Experiment(ExperimentConfig):
     def set_problem_kwargs(self,):
         self.obj = self.config.problem.obj
         self.d   = self.config.problem.d + (not self.CBO)
-        self.tol = getattr(self.config.problem, 'tol', 0.1)
+        self.tol = getattr(self.config.success, 'tol', 0.1)
         
     def set_dyn_kwargs(self,):
         self.Wirtinger, self.CBO = False, False
@@ -72,6 +75,11 @@ class PhaseRetrieval_Experiment(ExperimentConfig):
         prb = self.config.problem
         d, M, sigma_noise = (prb.d, prb.M, prb.sigma_noise)
 
+        print('Problem with d: '  + str(d) +
+              ', frame vectors: ' + str(M) + 
+              ', noise: '         + str(sigma_noise)
+             )
+
         # get frame vectors
         f = np.random.normal(0, 1, (M, d))
         f = f/np.linalg.norm(f, axis=-1, keepdims=True)
@@ -90,9 +98,6 @@ class PhaseRetrieval_Experiment(ExperimentConfig):
             ob = objective(y, f)
             self.R = ob.R
         return ob
-    
-    def get_scheduler(self,):
-        return multiply(factor=1.05, maximum=1e18)
     
     def get_minimizer(self,):
         return self.x_true

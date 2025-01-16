@@ -2,13 +2,12 @@ dyn:
     name: 'Wirtinger'
     M: 1
     N: 1
+    verbosity: 0
+    max_it: 10000
 init:
     name: 'sphere'
     mean: 0.
     std: 1.
-scheduler:
-    factor: 1.05
-    maximum: 1e5
 problem:
     name: phase
     d: 100

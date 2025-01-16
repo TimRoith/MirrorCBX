@@ -108,7 +108,7 @@ class WirtingerFlowBackTracking:
         self.verbosity = verbosity
         self.energy_tol = energy_tol
         
-    def optimize(self, sched=None):
+    def optimize(self, sched=None, print_int = 100):
         self.history = {}
         for i in range(self.max_it):
             g = (
@@ -120,7 +120,7 @@ class WirtingerFlowBackTracking:
             energy_old = energy(self.f, self.y, self.consensus)
             
             mu = self.mu0
-            for bc in range(50):
+            for bc in range(150):
                 tmp = energy_old + 0.1 * mu * np.linalg.norm(g)**2
                 
                 z_new = self.consensus - mu * g
@@ -132,7 +132,7 @@ class WirtingerFlowBackTracking:
             
             self.consensus = z_new.copy()
             
-            if self.verbosity > 0:
+            if self.verbosity > 0 and (i%print_int == 0):
                 print(energy_new)
             if energy_new < self.energy_tol:
                 break

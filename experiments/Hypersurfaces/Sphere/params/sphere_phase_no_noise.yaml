@@ -1,0 +1,31 @@
+dyn:
+    name: 'SphereCBO'
+    dt: 0.1
+    lamda: 1
+    alpha: 2e15
+    M: 1
+    N: 100
+    sigma: .11
+    noise: 'isotropic'
+    max_it: 10000
+    verbosity: 0
+    f_dim: '3D'
+    track_args: {'names':['consensus']}
+init:
+    name: 'sphere'
+    mean: 0.
+    std: 1.
+problem:
+    name: phase
+    d: 100
+    M: 500
+    constr: 'Sphere'
+    obj: ''
+    sigma_noise: 0.0
+success:
+    tol: 0.05
+    ord: float('inf')
+reps: 50
+sweeps:
+    problem:
+        M: [500, 1000, 1500]

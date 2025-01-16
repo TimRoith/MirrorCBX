@@ -2,13 +2,12 @@ dyn:
     name: 'Wirtinger'
     M: 1
     N: 1
+    verbosity: 1
+    max_it: 10000
 init:
     name: 'sphere'
     mean: 0.
     std: 1.
-scheduler:
-    factor: 1.05
-    maximum: 1e5
 problem:
     name: phase
     d: 32
@@ -22,4 +21,4 @@ success:
 reps: 50
 sweeps:
     problem:
-        sigma_noise: [0.0, 0.05, 0.1, 0.2]
+        sigma_noise: [0.0, 0.025, 0.05, 0.075, 0.1]
