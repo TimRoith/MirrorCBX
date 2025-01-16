@@ -28,19 +28,16 @@ class RegCombinationCBO(CBO):
         noise = self.sigma * self.noise()
 
         #  update particle positions
-        if self.eps < float('inf'):
-            x_tilde = self.x - self.lamda * self.dt * self.drift + noise
-            # A = (
-            #     np.eye(self.d[0]) + 
-            #     2 * (self.dt/ self.eps) * self.G.call_times_hessian(self.x)
-            # )
-            self.x = self.G.solve_Id_call_times_hessian(
+        
+        x_tilde = self.x - self.lamda * self.dt * self.drift + noise
+        if self.eps < 1e15:
+            self.x = self.G.solve_Id_plus_call_grad(
                 self.x,
                 x_tilde,
-                factor = 2 * (self.dt/ self.eps)
+                factor = self.dt / self.eps
             )
             #self.x = solve_system(A, x_tilde)
         else:
-            self.x = self.x_tilde
+            self.x = x_tilde
 
 

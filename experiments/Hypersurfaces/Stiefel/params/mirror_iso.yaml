@@ -1,32 +1,28 @@
 dyn:
-    name: 'RegCombinationCBO'
-    dt: 0.1
+    name: 'MirrorCBO'
+    dt: 0.2
     lamda: 1
     alpha: 5.
     M: 100
     N: 100
-    sigma: 1.
-    noise: 'anisotropic'
+    sigma: .2
+    noise: 'isotropic'
     max_it: 400
     verbosity: 0
     f_dim: '3D'
     track_args: {'names':['consensus', 'energy']}
-    nu: 300.
-    eps: .9
-init:
-    name: 'uniform'
-    low: -3
-    high: 3.
 scheduler:
     name: 'multiply'
     factor: 1.05
-    maximum: 1e18
+    maximum: 1e12
 resampling:
-    patience: 1
-    update_thresh: 0.01
-    sigma_indep: 0.5
+    patience: 5
+    update_thresh: 0.00001
+    sigma_indep: 0.
+    var_name: 'y'
 problem:
-    d: 20
+    d: 5
+    k: 10
     obj: 'Ackley-B'
     constr: 'Sphere'
 reps: 10

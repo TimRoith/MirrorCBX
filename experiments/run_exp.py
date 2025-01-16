@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 from pkgutil import importlib
 import numpy as np
 #%%
-problem = 'Hypersurfaces:Sphere'
-params  = 'cbo_phase_no_noise'
+problem = 'Hypersurfaces:Stiefel'
+params  = 'mirror_iso'
 
 #%%
 CFG = getattr(

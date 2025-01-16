@@ -1,0 +1,2 @@
+dt & alpha & lamda & noise & sigma & M & N & d & max_it & batch_args & scheduler & problem\\
+0.2 & 5.0 & 1 & isotropic & 0.2 & 100 & 100 & None & 400 & None & {'name': 'multiply', 'factor': 1.05, 'maximum': 1000000000000.0} & {'d': 5, 'k': 10, 'obj': 'Ackley-B', 'constr': 'Sphere'}\\

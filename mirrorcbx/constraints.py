@@ -55,6 +55,16 @@ class MultiConstraint:
             return 0
         return out
     
+    def solve_Id_plus_call_grad(self, x, x_tilde, factor = 1.):
+        if len(self.constraints) > 1:
+            raise ValueError('This function is not supported for more than one ' +
+                             'constraint')
+        elif len(self.constraints) == 1:
+            return self.constraints[0].solve_Id_plus_call_grad(x, x_tilde, factor=factor)
+        else:
+            return 0
+
+
     def solve_Id_hessian_squared_sum(self, x, x_tilde, factor=1.):
         if len(self.constraints) > 1:
             A = np.eye(x.shape[-1]) + factor * self.G.hessian_squared_sum(x)
@@ -116,7 +126,7 @@ class quadricConstraint(Constraint):
         
     def __call__(self, x):
          return (
-             (x * (x@self.A)) .sum(axis=-1) + 
+             (x * (x@self.A)).sum(axis=-1) + 
              (x * self.b).sum(axis=-1) + 
              self.c
         )
@@ -126,6 +136,11 @@ class quadricConstraint(Constraint):
     
     def hessian(self, x):
         return 2 * self.A
+    
+    def solve_Id_plus_call_grad(self, x, x_tilde, factor=1.):
+        M = (np.eye(self.A.shape[0])[None, None, ...] + 
+             4 * factor * self(x)[..., None, None] * self.A)
+        return np.linalg.solve(M, (x_tilde - 2 * factor * self(x)[..., None] * self.b)[..., None])[..., 0]
     
 class sphereConstraint(Constraint):
     def __init__(self, r=1.):
@@ -141,8 +156,8 @@ class sphereConstraint(Constraint):
     def hessian(self, x):
         return 2 * np.tile(np.eye(x.shape[-1]), x.shape[:-1] + (1,1))
     
-    def solve_Id_call_times_hessian(self, x, x_tilde, factor=1.):
-        return (1/(1 + 4 * factor * (np.linalg.norm(x, axis=-1, keepdims=True)**2 -1))) * x_tilde
+    def solve_Id_plus_call_grad(self, x, x_tilde, factor=1.):
+        return (1/(1 + 4 * factor * (np.linalg.norm(x, axis=-1, keepdims=True)**2 - self.r))) * x_tilde
     
     
 
@@ -164,6 +179,9 @@ class planeConstraint(Constraint):
     
     def solve_Id_call_times_hessian(self, x, x_tilde, factor=1.):
         return x_tilde
+
+    def solve_Id_plus_call_grad(self, x, x_tilde, factor=1.):
+        return x_tilde - 2 * factor * self(x)[...,None] * self.a/self.norm_a
     
     
 const_dict = {'plane': planeConstraint, 
