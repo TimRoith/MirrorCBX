@@ -2,7 +2,7 @@
 ![image](https://github.com/user-attachments/assets/f5d9573f-5acc-458c-9b92-8d0470fb2ef4)
 
 ---------
-# MirrorCBX
+# MirrorCBO
 
 The mirror consensus-based optimization method MirrorCBO aims to compute the global minimizer of a cost function $J:\mathbb R^d\to\mathbb R$ by solving the following system of stochastic differential equation 
 ```math
@@ -17,5 +17,17 @@ m_\alpha^\ast[\mu_t^N]:=\frac{\sum_{i=1}^N\exp\left(-\alpha J(\nabla\phi^\ast(y_
 is the weighted CBO-mean of the primal particles $x_t^{(i)}:=\nabla\phi^\ast(y_t^{(i)})$. 
 
 For $\phi(x):=\frac12|x|^2$ MirrorCBO reduces to standard CBO, for the choice $\phi(x):=\frac12|x|^2+\iota_C(x)$ one can perform constrained optimization on the set $C$, and for $\phi(x):=\frac12|x|^2+\lambda|x|_1$ the trajectories of the primal particles become sparse.
+
+Please refer to our [paper](https://arxiv.org/abs/2501.12189) when using the code.
+```
+@misc{bungert2025mirrorcboconsensusbasedoptimizationmethod,
+      title={MirrorCBO: A consensus-based optimization method in the spirit of mirror descent}, 
+      author={Leon Bungert and Franca Hoffmann and Doh Yeon Kim and Tim Roith},
+      year={2025},
+      eprint={2501.12189},
+      archivePrefix={arXiv},
+      primaryClass={math.OC},
+      url={https://arxiv.org/abs/2501.12189}, 
+}
 
 
