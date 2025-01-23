@@ -20,7 +20,7 @@ For $\phi(x):=\frac12|x|^2$ MirrorCBO reduces to standard CBO, for the choice $\
 
 Please refer to our [paper](https://arxiv.org/abs/2501.12189) when using the code.
 ```
-@misc{bungert2025mirrorcboconsensusbasedoptimizationmethod,
+@misc{bungert2025mirrorcbo,
       title={MirrorCBO: A consensus-based optimization method in the spirit of mirror descent}, 
       author={Leon Bungert and Franca Hoffmann and Doh Yeon Kim and Tim Roith},
       year={2025},
